@@ -1,4 +1,16 @@
 {
   "name": "moonlander",
-  "packageManager": "yarn@4.6.0"
+  "packageManager": "yarn@4.9.1",
+  "scripts": {
+    "dev": "vite --open",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "phaser": "^4.0.0-rc.4",
+    "phaser-box2d": "^1.1.0"
+  },
+  "devDependencies": {
+    "vite": "^6.3.5"
+  }
 }

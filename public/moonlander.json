@@ -1,0 +1,31 @@
+{
+	"generator_info": "Shape definitions generated with PhysicsEditor. Visit https://www.codeandweb.com/physicseditor",
+	"moonlander": {
+		"type": "fromPhysicsEditor",
+		"label": "moonlander",
+		"isStatic": false,
+		"density": 0.1,
+		"restitution": 0,
+		"friction": 0.1,
+		"frictionAir": 0.01,
+		"frictionStatic": 0.5,
+		"collisionFilter": {
+			"group": 0,
+			"category": 1,
+			"mask": 255
+		},
+		"fixtures": [
+			{
+				"label": "",
+				"isSensor": false,
+				"vertices": [
+					[ { "x":5, "y":41 }, { "x":9, "y":42 }, { "x":8, "y":34 }, { "x":6, "y":34 }, { "x":5, "y":36 } ],
+					[ { "x":59, "y":41 }, { "x":59, "y":36 }, { "x":58, "y":34 }, { "x":52, "y":26 }, { "x":14, "y":21 }, { "x":8, "y":34 }, { "x":9, "y":42 }, { "x":55, "y":42 } ],
+					[ { "x":48, "y":16 }, { "x":48, "y":14 }, { "x":16, "y":14 }, { "x":14, "y":21 } ],
+					[ { "x":14, "y":21 }, { "x":52, "y":26 }, { "x":50, "y":22 } ],
+					[ { "x":14, "y":21 }, { "x":50, "y":22 }, { "x":48, "y":16 } ]
+				]
+			}
+		]
+	}
+}
