@@ -10,7 +10,10 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
+    "strictPropertyInitialization": false,
+    "typeRoots": ["./node_modules/@types", "./src/lib/types"],
     "baseUrl": "."
   },
+  "include": ["src/**/*", "src/lib/types/**/*"],
   "exclude": ["node_modules", "dist"]
 }

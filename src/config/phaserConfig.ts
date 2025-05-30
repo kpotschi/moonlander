@@ -6,21 +6,9 @@ export const phaserConfig: Phaser.Types.Core.GameConfig = {
     mode: Phaser.Scale.HEIGHT_CONTROLS_WIDTH,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  width: 600,
-  height: 1000,
+  width: 720,
+  height: 1280,
   parent: "game",
   scene: [GameScene],
   backgroundColor: "#003322",
-
-  physics: {
-    default: "matter",
-    matter: {
-      debug: {
-        showBody: true,
-        showStaticBody: true,
-        showVelocity: true,
-        showCollisions: true,
-      },
-    },
-  },
 };
