@@ -1,3 +1,4 @@
+import { CONSTANTS } from "../config/CONSTANTS.js";
 import {
   AddSpriteToWorld,
   b2Body_GetPosition,
@@ -18,8 +19,13 @@ import {
   mpx,
   b2Body_ApplyForce,
   b2Body_SetLinearVelocity,
+  b2Body_ApplyTorque,
+  b2Body_GetAngularVelocity,
+  b2Body_SetAngularVelocity,
+  b2Body_GetRotation,
+  b2Body_SetFixedRotation,
 } from "../lib/phaser-box2d-main";
-import GameScene from "src/scenes/GameScene";
+import GameScene from "../scenes/GameScene";
 
 type BodyObject = {
   bodyId: b2BodyId;
@@ -33,6 +39,7 @@ export default class Lander {
   private rightLeg: BodyObject;
   private leftFoot: BodyObject;
   private rightFoot: BodyObject;
+  private corpusSprite: Phaser.GameObjects.Sprite;
 
   constructor(readonly scene: GameScene) {
     this.createLander();
@@ -40,13 +47,23 @@ export default class Lander {
 
   private async createLander() {
     await this.createCorpus();
+
     await this.createLegs();
     await this.createFeet();
     this.createJoints();
+
+    this.scene.cameras.main.startFollow(
+      this.corpusSprite,
+      true,
+      0.05,
+      0.05,
+      0,
+      CONSTANTS.CAMERA.FOLLOW_OFFSET_Y
+    );
   }
 
   private async createCorpus() {
-    const corpus = this.scene.add
+    this.corpusSprite = this.scene.add
       .sprite(this.scene.sys.canvas.width / 2, 100, "moonlander")
       .setDepth(10);
 
@@ -56,13 +73,17 @@ export default class Lander {
       type: b2BodyType.b2_dynamicBody,
       key: "moonlander_placeholder",
       url: "moonlander.xml",
-      position: new b2Vec2(pxm(corpus.x), pxm(-corpus.y)),
+      position: new b2Vec2(pxm(this.corpusSprite.x), pxm(-this.corpusSprite.y)),
       vertexOffset: new b2Vec2(0, 0),
       vertexScale: new b2Vec2(0.05, 0.05),
     });
 
-    AddSpriteToWorld(this.scene.world.worldId, corpus, this.corpus);
-    console.log("corpus");
+    AddSpriteToWorld(
+      this.scene.world.worldNumber,
+      this.corpusSprite,
+      this.corpus
+    );
+    console.log("1");
   }
 
   private async createLegs() {
@@ -102,8 +123,8 @@ export default class Lander {
       vertexScale: new b2Vec2(0.05, 0.05),
     });
 
-    AddSpriteToWorld(this.scene.world.worldId, legLeft, this.leftLeg);
-    AddSpriteToWorld(this.scene.world.worldId, legRight, this.rightLeg);
+    AddSpriteToWorld(this.scene.world.worldNumber, legLeft, this.leftLeg);
+    AddSpriteToWorld(this.scene.world.worldNumber, legRight, this.rightLeg);
   }
 
   private async createFeet() {
@@ -132,19 +153,16 @@ export default class Lander {
       vertexScale: new b2Vec2(0.05, 0.05),
     });
 
-    AddSpriteToWorld(this.scene.world.worldId, footLeft, this.leftFoot);
-    AddSpriteToWorld(this.scene.world.worldId, footRight, this.rightFoot);
+    AddSpriteToWorld(this.scene.world.worldNumber, footLeft, this.leftFoot);
+    AddSpriteToWorld(this.scene.world.worldNumber, footRight, this.rightFoot);
   }
 
   private createJoints() {
-    const corpusPosition = b2Body_GetPosition(this.corpus.bodyId);
-
     const leftAnchorOnCorpus = new b2Vec2(-2.7, -2.7);
     const rightAnchorOnCorpus = new b2Vec2(2.7, -2.7);
     const anchorOnLeg = new b2Vec2(0, 1.3);
 
     const corpusLegAngle = 30;
-    const jointLimits = { inner: 0, outer: 0.4 }; // radians
 
     // left joint
     const leftCorpusDef = b2DefaultRevoluteJointDef();
@@ -152,7 +170,6 @@ export default class Lander {
     leftCorpusDef.bodyIdB = this.leftLeg.bodyId;
     leftCorpusDef.localAnchorA = leftAnchorOnCorpus;
     leftCorpusDef.localAnchorB = anchorOnLeg;
-    leftCorpusDef.collideConnected = false;
 
     leftCorpusDef.referenceAngle = Phaser.Math.DegToRad(-corpusLegAngle);
     const leftCorpusJoint = b2CreateRevoluteJoint(
@@ -160,12 +177,11 @@ export default class Lander {
       leftCorpusDef
     );
 
-    // After creating the joint:
     b2RevoluteJoint_EnableLimit(leftCorpusJoint, true);
     b2RevoluteJoint_SetLimits(
       leftCorpusJoint,
-      -jointLimits.outer,
-      jointLimits.inner
+      -CONSTANTS.LANDER.LEGS.JOINT_ANGLE_LIMIT,
+      CONSTANTS.LANDER.LEGS.JOINT_ANGLE_LIMIT
     );
 
     // b2RevoluteJoint_EnableMotor(leftCorpusJoint, true);
@@ -179,7 +195,6 @@ export default class Lander {
     rightCorpusDef.bodyIdB = this.rightLeg.bodyId;
     rightCorpusDef.localAnchorA = rightAnchorOnCorpus;
     rightCorpusDef.localAnchorB = anchorOnLeg;
-    rightCorpusDef.collideConnected = false;
     rightCorpusDef.enableLimit = true;
 
     rightCorpusDef.referenceAngle = Phaser.Math.DegToRad(corpusLegAngle);
@@ -191,8 +206,8 @@ export default class Lander {
     b2RevoluteJoint_EnableLimit(rightCorpusJoint, true);
     b2RevoluteJoint_SetLimits(
       rightCorpusJoint,
-      -jointLimits.inner,
-      jointLimits.outer
+      -CONSTANTS.LANDER.LEGS.JOINT_ANGLE_LIMIT,
+      CONSTANTS.LANDER.LEGS.JOINT_ANGLE_LIMIT
     );
 
     // b2RevoluteJoint_EnableMotor(rightCorpusJoint, true);
@@ -205,7 +220,6 @@ export default class Lander {
     leftFootDef.bodyIdA = this.leftLeg.bodyId;
     leftFootDef.bodyIdB = this.leftFoot.bodyId;
     leftFootDef.localAnchorA = new b2Vec2(anchorOnLeg.x, -anchorOnLeg.y);
-    leftFootDef.collideConnected = false;
 
     leftFootDef.referenceAngle = Phaser.Math.DegToRad(corpusLegAngle);
     const leftFootJoint = b2CreateRevoluteJoint(
@@ -214,7 +228,11 @@ export default class Lander {
     );
 
     b2RevoluteJoint_EnableLimit(leftFootJoint, true);
-    b2RevoluteJoint_SetLimits(leftFootJoint, 0, 0);
+    b2RevoluteJoint_SetLimits(
+      leftFootJoint,
+      -CONSTANTS.LANDER.FEET.JOINT_ANGLE_LIMIT,
+      CONSTANTS.LANDER.FEET.JOINT_ANGLE_LIMIT
+    );
 
     b2RevoluteJoint_EnableMotor(leftFootJoint, true);
 
@@ -224,7 +242,6 @@ export default class Lander {
     rightFootDef.bodyIdA = this.rightLeg.bodyId;
     rightFootDef.bodyIdB = this.rightFoot.bodyId;
     rightFootDef.localAnchorA = new b2Vec2(anchorOnLeg.x, -anchorOnLeg.y);
-    rightFootDef.collideConnected = false;
 
     rightFootDef.referenceAngle = Phaser.Math.DegToRad(-corpusLegAngle);
     const rightFootJoint = b2CreateRevoluteJoint(
@@ -244,5 +261,52 @@ export default class Lander {
 
     b2Body_ApplyForce(this.corpus.bodyId, force, position, true);
     // b2Body_SetLinearVelocity(this.corpus.bodyId, force);
+  }
+
+  public getPosition(): Phaser.Types.Math.Vector2Like {
+    const position = b2Body_GetPosition(this.corpus.bodyId);
+    return new Phaser.Math.Vector2(mpx(position.x), mpx(-position.y));
+  }
+
+  update() {
+    if (this.scene.controls.thrust) {
+      const force = new b2Vec2(0, 2000); // Adjust value as needed
+      const position = b2Body_GetPosition(this.corpus.bodyId);
+      b2Body_ApplyForce(this.corpus.bodyId, force, position, true);
+    }
+
+    // Rotation (steering)
+    const steer = this.scene.controls.steer;
+    if (steer !== 0) {
+      const torque = 300; // Adjust for feel
+      b2Body_ApplyTorque(this.corpus.bodyId, -steer * torque, true);
+    }
+
+    // // --- NEW: Angular damping ---
+    // // If your API supports it, set angular damping once (not every frame)
+    // // Example: b2Body_SetAngularDamping(this.corpus.bodyId, 2.0);
+
+    // // --- Clamp angular velocity ---
+    if (this.corpus) {
+      const maxAngVel = 2.5; // radians/sec, adjust for feel
+      const angVel = b2Body_GetAngularVelocity(this.corpus.bodyId);
+      if (Math.abs(angVel) > maxAngVel) {
+        b2Body_SetAngularVelocity(
+          this.corpus.bodyId,
+          Math.sign(angVel) * maxAngVel
+        );
+      }
+
+      // --- Optional: Auto-stabilization ---
+      // If the lander is tilted more than 45 degrees, apply corrective torque
+      const rot = b2Body_GetRotation(this.corpus.bodyId); // { c: ..., s: ... }
+      const angle = Math.atan2(rot.s, rot.c); // angle in radians
+
+      const maxTilt = Math.PI / 4; // 45 degrees
+      if (Math.abs(angle) > maxTilt) {
+        const correctionTorque = -angle * 50; // Proportional controller, tune as needed
+        b2Body_ApplyTorque(this.corpus.bodyId, correctionTorque, true);
+      }
+    }
   }
 }

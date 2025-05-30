@@ -2,53 +2,30 @@ import Phaser from "phaser";
 
 import {
   CreateBoxPolygon,
-  CreateCapsule,
-  CreateWorld,
-  DYNAMIC,
   GetWorldScale,
   RotFromRad,
   STATIC,
-  SetWorldScale,
+  UpdateWorldSprites,
   WorldStep,
-  b2BodyId,
-  b2BodyType,
-  b2Body_GetPosition,
-  b2ComputeHull,
-  b2CreateBody,
-  b2CreatePolygonShape,
-  b2CreateRevoluteJoint,
   b2DefaultBodyDef,
-  b2DefaultRevoluteJointDef,
-  b2DefaultShapeDef,
-  b2DefaultWorldDef,
   b2HexColor,
-  b2MakePolygon,
-  b2RevoluteJoint_EnableLimit,
-  b2RevoluteJoint_EnableMotor,
-  b2RevoluteJoint_SetLimits,
-  b2RevoluteJoint_SetMaxMotorTorque,
-  b2RevoluteJoint_SetMotorSpeed,
   b2Vec2,
-  b2WorldId,
   b2World_Draw,
   pxmVec2,
-  AddSpriteToWorld,
-  CreatePhysicsEditorShape,
-  UpdateWorldSprites,
-  b2Body_ApplyForce,
 } from "../lib/phaser-box2d-main";
 
-import { WorldConfig } from "src/lib/phaser-box2d-main/types/physics";
-import { PhaserDebugDraw } from "../lib/PhaserDebugDraw.js";
+import { WorldConfig } from "../lib/phaser-box2d-main/types/physics";
 import Lander from "../entities/Lander.js";
+import { PhaserDebugDraw } from "../lib/PhaserDebugDraw.js";
+import World from "../systems/World";
+import Controls from "../systems/Controls";
 
 export default class GameScene extends Phaser.Scene {
-  public world: {
-    worldId: b2WorldId;
-  };
+  public world: World;
   private debug: Phaser.GameObjects.Graphics;
   private worldDraw: PhaserDebugDraw;
   public lander: Lander;
+  public controls: Controls;
 
   constructor() {
     super();
@@ -61,10 +38,8 @@ export default class GameScene extends Phaser.Scene {
   }
 
   async create() {
-    SetWorldScale(20);
-
     // create world
-    this.world = CreateWorld({ worldDef: b2DefaultWorldDef() });
+    this.world = new World(this);
 
     // debug
     this.createDebug();
@@ -74,6 +49,7 @@ export default class GameScene extends Phaser.Scene {
     this.createExampleShapes();
     // this.createMoonlander();
 
+    this.controls = new Controls(this);
     this.lander = new Lander(this);
   }
 
@@ -280,11 +256,9 @@ export default class GameScene extends Phaser.Scene {
 
     this.debug.clear();
 
-    UpdateWorldSprites(this.world.worldId);
+    UpdateWorldSprites(this.world.worldNumber);
 
-    if (this.input.activePointer.isDown) {
-      this.lander.applyForce();
-    }
+    if (this.lander) this.lander.update();
 
     b2World_Draw(worldId, this.worldDraw);
   }
