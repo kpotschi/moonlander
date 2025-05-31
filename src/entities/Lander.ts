@@ -10,10 +10,15 @@ import {
   b2BodyType,
   b2CreateRevoluteJoint,
   b2DefaultRevoluteJointDef,
+  b2JointId,
   b2Polygon,
   b2RevoluteJoint_EnableLimit,
   b2RevoluteJoint_EnableMotor,
+  b2RevoluteJoint_GetAngle,
+  b2RevoluteJoint_GetMotorSpeed,
   b2RevoluteJoint_SetLimits,
+  b2RevoluteJoint_SetMaxMotorTorque,
+  b2RevoluteJoint_SetMotorSpeed,
   b2ShapeId,
   b2Vec2,
   CreatePhysicsEditorShape,
@@ -22,6 +27,7 @@ import {
 } from "phaser-box2d";
 import { CONSTANTS } from "../config/CONSTANTS.js";
 import GameScene from "../scenes/GameScene";
+import { b2GetJoint } from "phaser-box2d/types/joint_c.js";
 
 type BodyObject = {
   bodyId: b2BodyId;
@@ -29,27 +35,55 @@ type BodyObject = {
   object: b2Polygon;
 };
 
-export default class Lander {
-  private corpus: BodyObject;
-  private leftLeg: BodyObject;
-  private rightLeg: BodyObject;
-  private leftFoot: BodyObject;
-  private rightFoot: BodyObject;
-  private corpusSprite: Phaser.GameObjects.Sprite;
+type Part = {
+  name: string;
+  gameObject: Phaser.GameObjects.Sprite;
+  body: BodyObject;
+};
 
-  constructor(readonly scene: GameScene) {
-    this.createLander();
+type PartCreateConfig = {
+  name: string; // Unique name for the part
+  sprite: string;
+  position: Phaser.Types.Math.Vector2Like;
+  dataKey: string; // Key to access the XML data for this part
+};
+
+type JointsCreateConfig = {
+  bodyA: string;
+  bodyB: string;
+  localAnchorA: Phaser.Types.Math.Vector2Like;
+  localAnchorB: Phaser.Types.Math.Vector2Like;
+  referenceAngle?: number; // Optional, if you need to set a specific angle for the joint
+  angleLimit?: number; // Optional, if you need to set an angle limit for the joint
+  motorTorque?: number; // Optional, if you want to enable motor torque
+};
+
+export default class Lander {
+  private parts: Part[] = [];
+  private joints: Record<string, b2JointId> = {};
+  private physicsData: XMLDocument;
+  private corpus: Part;
+
+  constructor(readonly scene: GameScene) {}
+
+  public preload() {
+    this.scene.load.image("moonlander", "moonlander_placeholder.png");
+    this.scene.load.image("moonlander_foot", "moonlander_feet_placeholder.png");
+    this.scene.load.image("moonlander_leg", "moonlander_leg_placeholder.png");
+
+    this.scene.load.xml("moonlander_data", "moonlander.xml");
   }
 
-  private async createLander() {
-    await this.createCorpus();
+  public create() {
+    this.physicsData = this.scene.cache.xml.get(
+      "moonlander_data"
+    ) as XMLDocument;
 
-    await this.createLegs();
-    await this.createFeet();
+    this.createParts();
     this.createJoints();
 
     this.scene.cameras.main.startFollow(
-      this.corpusSprite,
+      this.getPart("corpus").gameObject,
       true,
       0.05,
       0.05,
@@ -58,251 +92,263 @@ export default class Lander {
     );
   }
 
-  private async createCorpus() {
-    this.corpusSprite = this.scene.add
-      .sprite(this.scene.sys.canvas.width / 2, 100, "moonlander")
+  private createPart(config: PartCreateConfig): Part {
+    const gameObject = this.scene.add
+      .sprite(config.position.x, config.position.y, config.sprite)
       .setDepth(10);
 
-    // @ts-expect-error
-    this.corpus = await CreatePhysicsEditorShape({
+    const body = CreatePhysicsEditorShape({
       worldId: this.scene.world.worldId,
       type: b2BodyType.b2_dynamicBody,
-      key: "moonlander_placeholder",
-      url: "moonlander.xml",
-      position: new b2Vec2(pxm(this.corpusSprite.x), pxm(-this.corpusSprite.y)),
-      vertexOffset: new b2Vec2(0, 0),
-      vertexScale: new b2Vec2(0.05, 0.05),
+      key: config.dataKey,
+      xmlData: this.physicsData,
+      position: new b2Vec2(pxm(config.position.x), pxm(config.position.y)),
     });
 
-    AddSpriteToWorld(
-      this.scene.world.worldNumber,
-      this.corpusSprite,
-      this.corpus
-    );
-    console.log("1");
+    const part = { name: config.name, gameObject, body };
+
+    this.addPart(part);
+
+    AddSpriteToWorld(this.scene.world.worldNumber, gameObject, body);
+
+    return part;
   }
 
-  private async createLegs() {
-    const corpusPosition = b2Body_GetPosition(this.corpus.bodyId);
-    const legOffset = { x: 2.5, y: 3.7 }; // Adjusted for better leg placement
-    const legLeft = this.scene.add.sprite(
-      mpx(corpusPosition.x - legOffset.x),
-      mpx(-corpusPosition.y + legOffset.y),
-      "moonlander_legs"
-    );
-
-    const legRight = this.scene.add.sprite(
-      mpx(corpusPosition.x + legOffset.x),
-      mpx(-corpusPosition.y + legOffset.y),
-      "moonlander_legs"
-    );
-
-    // @ts-expect-error
-    this.leftLeg = await CreatePhysicsEditorShape({
-      worldId: this.scene.world.worldId,
-      type: b2BodyType.b2_dynamicBody,
-      key: "moonlander_leg_placeholder",
-      url: "moonlander.xml",
-      position: new b2Vec2(pxm(legLeft.x), pxm(-legLeft.y)),
-      vertexOffset: new b2Vec2(0, 0),
-      vertexScale: new b2Vec2(0.05, 0.05),
+  private createParts() {
+    // corpus
+    this.corpus = this.createPart({
+      name: "corpus",
+      sprite: "moonlander",
+      position: { x: this.scene.sys.canvas.width / 2, y: 100 },
+      dataKey: "moonlander_placeholder",
     });
 
-    // @ts-expect-error
-    this.rightLeg = await CreatePhysicsEditorShape({
-      worldId: this.scene.world.worldId,
-      type: b2BodyType.b2_dynamicBody,
-      key: "moonlander_leg_placeholder",
-      url: "moonlander.xml",
-      position: new b2Vec2(pxm(legRight.x), pxm(-legRight.y)),
-      vertexOffset: new b2Vec2(0, 0),
-      vertexScale: new b2Vec2(0.05, 0.05),
+    const corpusPosition = b2Body_GetPosition(this.corpus.body.bodyId);
+
+    // legs
+    const legOffset = { x: 2.5, y: 3.7 };
+
+    this.createPart({
+      name: "leg_left",
+      sprite: "moonlander_leg",
+      position: {
+        x: mpx(corpusPosition.x - legOffset.x),
+        y: mpx(-corpusPosition.y + legOffset.y),
+      },
+      dataKey: "moonlander_leg_placeholder",
     });
 
-    AddSpriteToWorld(this.scene.world.worldNumber, legLeft, this.leftLeg);
-    AddSpriteToWorld(this.scene.world.worldNumber, legRight, this.rightLeg);
-  }
-
-  private async createFeet() {
-    const footLeft = this.scene.add.sprite(100, 100, "moonlander_feet");
-    const footRight = this.scene.add.sprite(100, 100, "moonlander_feet");
-
-    // @ts-expect-error
-    this.leftFoot = await CreatePhysicsEditorShape({
-      worldId: this.scene.world.worldId,
-      type: b2BodyType.b2_dynamicBody,
-      key: "moonlander_feet_placeholder",
-      url: "moonlander.xml",
-      position: new b2Vec2(35, 0),
-      vertexOffset: new b2Vec2(0, 0),
-      vertexScale: new b2Vec2(0.05, 0.05),
+    this.createPart({
+      name: "leg_right",
+      sprite: "moonlander_leg",
+      position: {
+        x: mpx(corpusPosition.x + legOffset.x),
+        y: mpx(-corpusPosition.y + legOffset.y),
+      },
+      dataKey: "moonlander_leg_placeholder",
     });
 
-    // @ts-expect-error
-    this.rightFoot = await CreatePhysicsEditorShape({
-      worldId: this.scene.world.worldId,
-      type: b2BodyType.b2_dynamicBody,
-      key: "moonlander_feet_placeholder",
-      url: "moonlander.xml",
-      position: new b2Vec2(30, 10),
-      vertexOffset: new b2Vec2(0, 0),
-      vertexScale: new b2Vec2(0.05, 0.05),
+    //feet
+    this.createPart({
+      name: "foot_left",
+      sprite: "moonlander_foot",
+      position: {
+        x: mpx(corpusPosition.x - legOffset.x),
+        y: mpx(-corpusPosition.y + legOffset.y),
+      },
+      dataKey: "moonlander_foot_placeholder",
     });
 
-    AddSpriteToWorld(this.scene.world.worldNumber, footLeft, this.leftFoot);
-    AddSpriteToWorld(this.scene.world.worldNumber, footRight, this.rightFoot);
+    this.createPart({
+      name: "foot_right",
+      sprite: "moonlander_foot",
+      position: {
+        x: mpx(corpusPosition.x + legOffset.x),
+        y: mpx(-corpusPosition.y + legOffset.y),
+      },
+      dataKey: "moonlander_foot_placeholder",
+    });
   }
 
   private createJoints() {
-    const leftAnchorOnCorpus = new b2Vec2(-2.7, -2.7);
-    const rightAnchorOnCorpus = new b2Vec2(2.7, -2.7);
-    const anchorOnLeg = new b2Vec2(0, 1.3);
+    this.joints["leg_left"] = this.createJoint({
+      bodyA: "corpus",
+      bodyB: "leg_left",
+      localAnchorA: CONSTANTS.LANDER.CORPUS.JOINTS.ANCHORS.LEFT,
+      localAnchorB: CONSTANTS.LANDER.LEGS.JOINTS.ANCHORS.TOP,
+      referenceAngle: -CONSTANTS.LANDER.LEGS.JOINTS.REFERENCE_ANGLE,
+      angleLimit: CONSTANTS.LANDER.LEGS.JOINTS.ANGLE_LIMIT,
+      // motorTorque: CONSTANTS.LANDER.LEGS.JOINTS.MOTOR_TORQUE,
+    });
 
-    const corpusLegAngle = 30;
+    this.joints["leg_right"] = this.createJoint({
+      bodyA: "corpus",
+      bodyB: "leg_right",
+      localAnchorA: CONSTANTS.LANDER.CORPUS.JOINTS.ANCHORS.RIGHT,
+      localAnchorB: CONSTANTS.LANDER.LEGS.JOINTS.ANCHORS.TOP,
+      referenceAngle: CONSTANTS.LANDER.LEGS.JOINTS.REFERENCE_ANGLE,
+      angleLimit: CONSTANTS.LANDER.LEGS.JOINTS.ANGLE_LIMIT,
+      // motorTorque: CONSTANTS.LANDER.LEGS.JOINTS.MOTOR_TORQUE,
+    });
 
-    // left joint
-    const leftCorpusDef = b2DefaultRevoluteJointDef();
-    leftCorpusDef.bodyIdA = this.corpus.bodyId;
-    leftCorpusDef.bodyIdB = this.leftLeg.bodyId;
-    leftCorpusDef.localAnchorA = leftAnchorOnCorpus;
-    leftCorpusDef.localAnchorB = anchorOnLeg;
+    this.joints["foot_left"] = this.createJoint({
+      bodyA: "leg_left",
+      bodyB: "foot_left",
+      localAnchorA: CONSTANTS.LANDER.LEGS.JOINTS.ANCHORS.BOTTOM,
+      localAnchorB: CONSTANTS.LANDER.FEET.JOINTS.ANCHORS.CENTER,
+      referenceAngle: CONSTANTS.LANDER.LEGS.JOINTS.REFERENCE_ANGLE,
+      angleLimit: CONSTANTS.LANDER.FEET.JOINTS.ANGLE_LIMIT,
+      // motorTorque: CONSTANTS.LANDER.FEET.JOINTS.MOTOR_TORQUE,
+    });
 
-    leftCorpusDef.referenceAngle = Phaser.Math.DegToRad(-corpusLegAngle);
-    const leftCorpusJoint = b2CreateRevoluteJoint(
-      this.scene.world.worldId,
-      leftCorpusDef
-    );
-
-    b2RevoluteJoint_EnableLimit(leftCorpusJoint, true);
-    b2RevoluteJoint_SetLimits(
-      leftCorpusJoint,
-      -CONSTANTS.LANDER.LEGS.JOINT_ANGLE_LIMIT,
-      CONSTANTS.LANDER.LEGS.JOINT_ANGLE_LIMIT
-    );
-
-    // b2RevoluteJoint_EnableMotor(leftCorpusJoint, true);
-    // b2RevoluteJoint_SetMotorSpeed(leftCorpusJoint, 0.1);
-    // b2RevoluteJoint_SetMaxMotorTorque(leftCorpusJoint, 62);
-
-    // right joint
-    const rightCorpusDef = b2DefaultRevoluteJointDef();
-
-    rightCorpusDef.bodyIdA = this.corpus.bodyId;
-    rightCorpusDef.bodyIdB = this.rightLeg.bodyId;
-    rightCorpusDef.localAnchorA = rightAnchorOnCorpus;
-    rightCorpusDef.localAnchorB = anchorOnLeg;
-    rightCorpusDef.enableLimit = true;
-
-    rightCorpusDef.referenceAngle = Phaser.Math.DegToRad(corpusLegAngle);
-    const rightCorpusJoint = b2CreateRevoluteJoint(
-      this.scene.world.worldId,
-      rightCorpusDef
-    );
-
-    b2RevoluteJoint_EnableLimit(rightCorpusJoint, true);
-    b2RevoluteJoint_SetLimits(
-      rightCorpusJoint,
-      -CONSTANTS.LANDER.LEGS.JOINT_ANGLE_LIMIT,
-      CONSTANTS.LANDER.LEGS.JOINT_ANGLE_LIMIT
-    );
-
-    // b2RevoluteJoint_EnableMotor(rightCorpusJoint, true);
-    // b2RevoluteJoint_SetMotorSpeed(rightCorpusJoint, -0.1);
-    // b2RevoluteJoint_SetMaxMotorTorque(rightCorpusJoint, 62);
-
-    // left foot joint
-    const leftFootDef = b2DefaultRevoluteJointDef();
-
-    leftFootDef.bodyIdA = this.leftLeg.bodyId;
-    leftFootDef.bodyIdB = this.leftFoot.bodyId;
-    leftFootDef.localAnchorA = new b2Vec2(anchorOnLeg.x, -anchorOnLeg.y);
-
-    leftFootDef.referenceAngle = Phaser.Math.DegToRad(corpusLegAngle);
-    const leftFootJoint = b2CreateRevoluteJoint(
-      this.scene.world.worldId,
-      leftFootDef
-    );
-
-    b2RevoluteJoint_EnableLimit(leftFootJoint, true);
-    b2RevoluteJoint_SetLimits(
-      leftFootJoint,
-      -CONSTANTS.LANDER.FEET.JOINT_ANGLE_LIMIT,
-      CONSTANTS.LANDER.FEET.JOINT_ANGLE_LIMIT
-    );
-
-    b2RevoluteJoint_EnableMotor(leftFootJoint, true);
-
-    // right foot joint
-    const rightFootDef = b2DefaultRevoluteJointDef();
-
-    rightFootDef.bodyIdA = this.rightLeg.bodyId;
-    rightFootDef.bodyIdB = this.rightFoot.bodyId;
-    rightFootDef.localAnchorA = new b2Vec2(anchorOnLeg.x, -anchorOnLeg.y);
-
-    rightFootDef.referenceAngle = Phaser.Math.DegToRad(-corpusLegAngle);
-    const rightFootJoint = b2CreateRevoluteJoint(
-      this.scene.world.worldId,
-      rightFootDef
-    );
-
-    b2RevoluteJoint_EnableLimit(rightFootJoint, true);
-    b2RevoluteJoint_SetLimits(rightFootJoint, 0, 0);
-
-    b2RevoluteJoint_EnableMotor(rightFootJoint, true);
+    this.joints["foot_right"] = this.createJoint({
+      bodyA: "leg_right",
+      bodyB: "foot_right",
+      localAnchorA: CONSTANTS.LANDER.LEGS.JOINTS.ANCHORS.BOTTOM,
+      localAnchorB: CONSTANTS.LANDER.FEET.JOINTS.ANCHORS.CENTER,
+      referenceAngle: -CONSTANTS.LANDER.LEGS.JOINTS.REFERENCE_ANGLE,
+      angleLimit: CONSTANTS.LANDER.FEET.JOINTS.ANGLE_LIMIT,
+      // motorTorque: CONSTANTS.LANDER.FEET.JOINTS.MOTOR_TORQUE,
+    });
   }
 
-  public applyForce() {
-    const force = new b2Vec2(0, 2000);
-    const position = b2Body_GetPosition(this.corpus.bodyId);
+  private createJoint(config: JointsCreateConfig): b2JointId {
+    const bodyA = this.getPart(config.bodyA).body;
+    const bodyB = this.getPart(config.bodyB).body;
 
-    b2Body_ApplyForce(this.corpus.bodyId, force, position, true);
-    // b2Body_SetLinearVelocity(this.corpus.bodyId, force);
+    const jointDef = b2DefaultRevoluteJointDef();
+    jointDef.bodyIdA = bodyA.bodyId;
+    jointDef.bodyIdB = bodyB.bodyId;
+    jointDef.localAnchorA = new b2Vec2(
+      pxm(config.localAnchorA.x),
+      pxm(config.localAnchorA.y)
+    );
+    jointDef.localAnchorB = new b2Vec2(
+      pxm(config.localAnchorB.x),
+      pxm(config.localAnchorB.y)
+    );
+    console.log(config.referenceAngle);
+
+    jointDef.referenceAngle = Phaser.Math.DegToRad(config.referenceAngle || 0);
+    const jointId = b2CreateRevoluteJoint(this.scene.world.worldId, jointDef);
+
+    if (config.angleLimit != null) {
+      b2RevoluteJoint_EnableLimit(jointId, true);
+      b2RevoluteJoint_SetLimits(
+        jointId,
+        Phaser.Math.DegToRad(-config.angleLimit),
+        Phaser.Math.DegToRad(config.angleLimit)
+      );
+    }
+
+    // Always enable the motor for spring-like behavior
+    // b2RevoluteJoint_EnableMotor(jointId, true);
+    // b2RevoluteJoint_SetMaxMotorTorque(jointId, config.motorTorque ?? 2000);
+
+    return jointId;
   }
+
+  // public applyForce() {
+  //   const force = new b2Vec2(0, 2000);
+  //   const position = b2Body_GetPosition(this.corpus.bodyId);
+
+  //   b2Body_ApplyForce(this.corpus.bodyId, force, position, true);
+  //   // b2Body_SetLinearVelocity(this.corpus.bodyId, force);
+  // }
 
   public getPosition(): Phaser.Types.Math.Vector2Like {
-    const position = b2Body_GetPosition(this.corpus.bodyId);
+    const position = b2Body_GetPosition(this.corpus.body.bodyId);
     return new Phaser.Math.Vector2(mpx(position.x), mpx(-position.y));
   }
 
   update() {
+    this.updateLegMotors();
     if (this.scene.controls.thrust) {
-      const force = new b2Vec2(0, 2000); // Adjust value as needed
-      const position = b2Body_GetPosition(this.corpus.bodyId);
-      b2Body_ApplyForce(this.corpus.bodyId, force, position, true);
+      const force = new b2Vec2(0, 2000);
+      const position = b2Body_GetPosition(this.corpus.body.bodyId);
+      b2Body_ApplyForce(this.corpus.body.bodyId, force, position, true);
     }
+    // // Rotation (steering)
+    // const steer = this.scene.controls.steer;
+    // if (steer !== 0) {
+    //   const torque = 300; // Adjust for feel
+    //   b2Body_ApplyTorque(this.corpus.bodyId, -steer * torque, true);
+    // }
+    // // // --- NEW: Angular damping ---
+    // // // If your API supports it, set angular damping once (not every frame)
+    // // // Example: b2Body_SetAngularDamping(this.corpus.bodyId, 2.0);
+    // // // --- Clamp angular velocity ---
+    // if (this.corpus) {
+    //   const maxAngVel = 2.5; // radians/sec, adjust for feel
+    //   const angVel = b2Body_GetAngularVelocity(this.corpus.bodyId);
+    //   if (Math.abs(angVel) > maxAngVel) {
+    //     b2Body_SetAngularVelocity(
+    //       this.corpus.bodyId,
+    //       Math.sign(angVel) * maxAngVel
+    //     );
+    //   }
+    //   // --- Optional: Auto-stabilization ---
+    //   // If the lander is tilted more than 45 degrees, apply corrective torque
+    //   const rot = b2Body_GetRotation(this.corpus.bodyId); // { c: ..., s: ... }
+    //   const angle = Math.atan2(rot.s, rot.c); // angle in radians
+    //   const maxTilt = Math.PI / 4; // 45 degrees
+    //   if (Math.abs(angle) > maxTilt) {
+    //     const correctionTorque = -angle * 50; // Proportional controller, tune as needed
+    //     b2Body_ApplyTorque(this.corpus.bodyId, correctionTorque, true);
+    //   }
+    // }
+  }
 
-    // Rotation (steering)
-    const steer = this.scene.controls.steer;
-    if (steer !== 0) {
-      const torque = 300; // Adjust for feel
-      b2Body_ApplyTorque(this.corpus.bodyId, -steer * torque, true);
+  private updateLegMotors() {
+    // // --- Example: Spring-like return for leg joints ---
+    // // Tune these gains for your desired "springiness"
+    // const springGain = 50; // How strongly the joint tries to return
+    // const dampingGain = 0.8; // How much to damp oscillation
+    // // Left leg
+    // {
+    //   const jointId = this.joints["leg_left"];
+    //   const reference = -Phaser.Math.DegToRad(
+    //     CONSTANTS.LANDER.LEGS.JOINTS.REFERENCE_ANGLE
+    //   );
+    //   const angle = b2RevoluteJoint_GetAngle(jointId); // radians
+    //   // Get angular velocities of both bodies
+    //   const bodyA = this.getPart("corpus").body.bodyId;
+    //   const bodyB = this.getPart("leg_left").body.bodyId;
+    //   const angVelA = b2Body_GetAngularVelocity(bodyA);
+    //   const angVelB = b2Body_GetAngularVelocity(bodyB);
+    //   const speed = angVelB - angVelA; // relative angular velocity
+    //   const error = reference - angle;
+    //   const motorSpeed = error * springGain - speed * dampingGain;
+    //   b2RevoluteJoint_SetMotorSpeed(jointId, motorSpeed);
+    // }
+    // // Right leg
+    // {
+    //   const jointId = this.joints["leg_right"];
+    //   const reference = Phaser.Math.DegToRad(
+    //     CONSTANTS.LANDER.LEGS.JOINTS.REFERENCE_ANGLE
+    //   );
+    //   const angle = b2RevoluteJoint_GetAngle(jointId);
+    //   const bodyA = this.getPart("corpus").body.bodyId;
+    //   const bodyB = this.getPart("leg_right").body.bodyId;
+    //   const angVelA = b2Body_GetAngularVelocity(bodyA);
+    //   const angVelB = b2Body_GetAngularVelocity(bodyB);
+    //   const speed = angVelB - angVelA;
+    //   const error = reference - angle;
+    //   const motorSpeed = error * springGain - speed * dampingGain;
+    //   b2RevoluteJoint_SetMotorSpeed(jointId, motorSpeed);
+    // }
+  }
+
+  public getPart(name: string): Part {
+    const part = this.parts.find((part) => part.name === name);
+
+    if (!part) {
+      throw new Error(`Part with name "${name}" not found.`);
     }
+    return part;
+  }
 
-    // // --- NEW: Angular damping ---
-    // // If your API supports it, set angular damping once (not every frame)
-    // // Example: b2Body_SetAngularDamping(this.corpus.bodyId, 2.0);
-
-    // // --- Clamp angular velocity ---
-    if (this.corpus) {
-      const maxAngVel = 2.5; // radians/sec, adjust for feel
-      const angVel = b2Body_GetAngularVelocity(this.corpus.bodyId);
-      if (Math.abs(angVel) > maxAngVel) {
-        b2Body_SetAngularVelocity(
-          this.corpus.bodyId,
-          Math.sign(angVel) * maxAngVel
-        );
-      }
-
-      // --- Optional: Auto-stabilization ---
-      // If the lander is tilted more than 45 degrees, apply corrective torque
-      const rot = b2Body_GetRotation(this.corpus.bodyId); // { c: ..., s: ... }
-      const angle = Math.atan2(rot.s, rot.c); // angle in radians
-
-      const maxTilt = Math.PI / 4; // 45 degrees
-      if (Math.abs(angle) > maxTilt) {
-        const correctionTorque = -angle * 50; // Proportional controller, tune as needed
-        b2Body_ApplyTorque(this.corpus.bodyId, correctionTorque, true);
-      }
-    }
+  private addPart(part: Part) {
+    this.parts.push(part);
   }
 }

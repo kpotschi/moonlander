@@ -2,7 +2,7 @@
 <!-- created with http://www.physicseditor.de -->
 <bodydef version="1.0">
 	<bodies>
-		<body name="moonlander_feet_placeholder">
+		<body name="moonlander_foot_placeholder">
             <anchorpoint>0.5000,0.5000</anchorpoint>
 			<fixtures>
 				<fixture>
@@ -59,7 +59,7 @@
 	</bodies>
 	<metadata>
 		<format>1</format>
-		<ptm_ratio>20</ptm_ratio>
+		<ptm_ratio>40</ptm_ratio>
 	</metadata>
 </bodydef>
 

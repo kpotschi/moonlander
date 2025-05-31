@@ -12,9 +12,9 @@ export default class World {
   readonly worldNumber: number;
 
   constructor(readonly scene: GameScene) {
+    this.worldId = CreateWorld({ worldDef: b2DefaultWorldDef() }).worldId;
     SetWorldScale(CONSTANTS.WORLD.SCALE);
 
-    this.worldId = CreateWorld({ worldDef: b2DefaultWorldDef() }).worldId;
     this.worldNumber = Number(this.worldId);
   }
 
