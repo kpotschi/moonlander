@@ -19,6 +19,8 @@ import { PhaserDebugDraw } from "../lib/PhaserDebugDraw.js";
 import World from "../systems/World";
 import Controls from "../systems/Controls";
 import { WorldConfig } from "phaser-box2d/types/physics.js";
+import Altimeter from "../systems/ui/Altimeter.js";
+import UiManager from "../systems/ui/UiManager.js";
 
 export default class GameScene extends Phaser.Scene {
   public world: World;
@@ -26,6 +28,8 @@ export default class GameScene extends Phaser.Scene {
   private worldDraw: PhaserDebugDraw;
   public lander: Lander;
   public controls: Controls;
+  public altimeter: Altimeter;
+  public ui: UiManager;
 
   constructor() {
     super();
@@ -33,19 +37,21 @@ export default class GameScene extends Phaser.Scene {
 
   init() {
     this.world = new World(this);
+    this.ui = new UiManager(this);
     this.createDebug();
     this.controls = new Controls(this);
-
     this.lander = new Lander(this);
   }
 
   preload() {
     this.lander.preload();
+    this.ui.preload();
   }
 
   async create() {
     this.createGround();
     this.lander.create();
+    this.ui.create();
   }
 
   private createDebug() {

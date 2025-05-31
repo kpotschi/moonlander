@@ -67,11 +67,20 @@ export default class Lander {
   constructor(readonly scene: GameScene) {}
 
   public preload() {
-    this.scene.load.image("moonlander", "moonlander_placeholder.png");
-    this.scene.load.image("moonlander_foot", "moonlander_feet_placeholder.png");
-    this.scene.load.image("moonlander_leg", "moonlander_leg_placeholder.png");
+    this.scene.load.image(
+      "moonlander",
+      "/images/moonlander/moonlander_placeholder.png"
+    );
+    this.scene.load.image(
+      "moonlander_foot",
+      "images/moonlander/moonlander_feet_placeholder.png"
+    );
+    this.scene.load.image(
+      "moonlander_leg",
+      "images/moonlander/moonlander_leg_placeholder.png"
+    );
 
-    this.scene.load.xml("moonlander_data", "moonlander.xml");
+    this.scene.load.xml("moonlander_data", "images/moonlander/moonlander.xml");
   }
 
   public create() {
@@ -81,6 +90,11 @@ export default class Lander {
 
     this.createParts();
     this.createJoints();
+    this.setupCameras();
+  }
+
+  private setupCameras() {
+    this.scene.ui.camera.ignore(this.parts.map((part) => part.gameObject));
 
     this.scene.cameras.main.startFollow(
       this.getPart("corpus").gameObject,
