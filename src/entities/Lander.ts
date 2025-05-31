@@ -1,7 +1,11 @@
-import { CONSTANTS } from "../config/CONSTANTS.js";
 import {
   AddSpriteToWorld,
+  b2Body_ApplyForce,
+  b2Body_ApplyTorque,
+  b2Body_GetAngularVelocity,
   b2Body_GetPosition,
+  b2Body_GetRotation,
+  b2Body_SetAngularVelocity,
   b2BodyId,
   b2BodyType,
   b2CreateRevoluteJoint,
@@ -10,21 +14,13 @@ import {
   b2RevoluteJoint_EnableLimit,
   b2RevoluteJoint_EnableMotor,
   b2RevoluteJoint_SetLimits,
-  b2RevoluteJoint_SetMaxMotorTorque,
-  b2RevoluteJoint_SetMotorSpeed,
   b2ShapeId,
   b2Vec2,
   CreatePhysicsEditorShape,
-  pxm,
   mpx,
-  b2Body_ApplyForce,
-  b2Body_SetLinearVelocity,
-  b2Body_ApplyTorque,
-  b2Body_GetAngularVelocity,
-  b2Body_SetAngularVelocity,
-  b2Body_GetRotation,
-  b2Body_SetFixedRotation,
-} from "../lib/phaser-box2d-main";
+  pxm,
+} from "phaser-box2d";
+import { CONSTANTS } from "../config/CONSTANTS.js";
 import GameScene from "../scenes/GameScene";
 
 type BodyObject = {

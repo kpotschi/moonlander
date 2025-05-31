@@ -1,1 +1,0 @@
-export { b2StackAllocator, b2CreateStackAllocator, b2DestroyStackAllocator, b2AllocateStackItem, b2FreeStackItem, b2GrowStack, b2GetStackCapacity, b2GetStackAllocation, b2GetMaxStackAllocation } from "../stack_allocator_c.js";

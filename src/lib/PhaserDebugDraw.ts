@@ -1,5 +1,4 @@
-import { b2AABB, b2Vec2 } from "./phaser-box2d-main";
-import type { b2Transform } from "./phaser-box2d-main";
+import { b2AABB, b2Transform, b2Vec2 } from "phaser-box2d";
 
 export class PhaserDebugDraw {
   readonly drawingBounds: b2AABB;

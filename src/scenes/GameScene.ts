@@ -12,13 +12,13 @@ import {
   b2Vec2,
   b2World_Draw,
   pxmVec2,
-} from "../lib/phaser-box2d-main";
+} from "phaser-box2d";
 
-import { WorldConfig } from "../lib/phaser-box2d-main/types/physics";
 import Lander from "../entities/Lander.js";
 import { PhaserDebugDraw } from "../lib/PhaserDebugDraw.js";
 import World from "../systems/World";
 import Controls from "../systems/Controls";
+import { WorldConfig } from "phaser-box2d/types/physics.js";
 
 export default class GameScene extends Phaser.Scene {
   public world: World;

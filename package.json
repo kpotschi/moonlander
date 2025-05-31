@@ -12,5 +12,8 @@
   },
   "devDependencies": {
     "vite": "^6.3.5"
+  },
+  "resolutions": {
+    "phaser-box2d": "portal:/Users/kevinpotschien/Coding/phaser-box2d"
   }
 }
