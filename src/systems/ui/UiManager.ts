@@ -13,7 +13,7 @@ export default class UiManager {
       0,
       this.scene.sys.canvas.width,
       this.scene.sys.canvas.height,
-      true,
+      false,
       "ui-camera"
     );
   }
@@ -26,8 +26,8 @@ export default class UiManager {
     this.createAltimeter();
   }
 
-  public update(altitude: number): void {
-    // this.altimeter.update(altitude);
+  public update(): void {
+    this.altimeter.update();
   }
 
   private createAltimeter(): void {

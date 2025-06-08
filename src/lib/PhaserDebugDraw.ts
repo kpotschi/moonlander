@@ -1,4 +1,5 @@
 import { b2AABB, b2Transform, b2Vec2 } from "phaser-box2d";
+import GameScene from "../scenes/GameScene";
 
 export class PhaserDebugDraw {
   readonly drawingBounds: b2AABB;
@@ -19,6 +20,7 @@ export class PhaserDebugDraw {
 
   context: Phaser.GameObjects.Graphics;
   constructor(
+    readonly scene: GameScene,
     readonly graphics: Phaser.GameObjects.Graphics,
     readonly width: number,
     readonly height: number,
@@ -43,6 +45,7 @@ export class PhaserDebugDraw {
     this.context = graphics;
 
     this.SetPosition(width, 0);
+    scene.ui.camera.ignore(this.graphics);
   }
 
   b2TransformPointOut(t: b2Transform, p: b2Vec2, out: b2Vec2): void {

@@ -3,9 +3,11 @@ import {
   b2Body_ApplyForce,
   b2Body_ApplyTorque,
   b2Body_GetAngularVelocity,
+  b2Body_GetLinearVelocity,
   b2Body_GetPosition,
   b2Body_GetRotation,
   b2Body_SetAngularVelocity,
+  b2Body_SetLinearVelocity,
   b2BodyId,
   b2BodyType,
   b2CreateRevoluteJoint,
@@ -97,7 +99,7 @@ export default class Lander {
     this.scene.ui.camera.ignore(this.parts.map((part) => part.gameObject));
 
     this.scene.cameras.main.startFollow(
-      this.getPart("corpus").gameObject,
+      this.corpus.gameObject,
       true,
       0.05,
       0.05,
@@ -241,7 +243,6 @@ export default class Lander {
       pxm(config.localAnchorB.x),
       pxm(config.localAnchorB.y)
     );
-    console.log(config.referenceAngle);
 
     jointDef.referenceAngle = Phaser.Math.DegToRad(config.referenceAngle || 0);
     const jointId = b2CreateRevoluteJoint(this.scene.world.worldId, jointDef);
@@ -276,12 +277,14 @@ export default class Lander {
   }
 
   update() {
-    this.updateLegMotors();
+    // this.updateLegMotors();
     if (this.scene.controls.thrust) {
       const force = new b2Vec2(0, 2000);
       const position = b2Body_GetPosition(this.corpus.body.bodyId);
       b2Body_ApplyForce(this.corpus.body.bodyId, force, position, true);
     }
+
+    this.checkTerminalVelocity();
     // // Rotation (steering)
     // const steer = this.scene.controls.steer;
     // if (steer !== 0) {
@@ -311,6 +314,23 @@ export default class Lander {
     //     b2Body_ApplyTorque(this.corpus.bodyId, correctionTorque, true);
     //   }
     // }
+  }
+
+  private checkTerminalVelocity() {
+    const maxFallSpeed = CONSTANTS.WORLD.TERMINAL_VELOCITY; // meters/second, realistic for a lander
+    const body = this.corpus.body.bodyId;
+    const velocity = b2Body_GetLinearVelocity(body);
+
+    if (velocity.y < -maxFallSpeed) {
+      velocity.y = -maxFallSpeed;
+      b2Body_SetLinearVelocity(body, velocity);
+    }
+  }
+
+  public getAltitude(): number {
+    const altitude = -pxm(this.corpus.gameObject.y);
+
+    return altitude;
   }
 
   private updateLegMotors() {

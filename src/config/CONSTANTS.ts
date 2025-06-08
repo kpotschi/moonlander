@@ -34,6 +34,7 @@ export const CONSTANTS = {
   WORLD: {
     SCALE: 20, // 1 meter = 20 pixels
     GRAVITY: -9.81, // m/s^2
+    TERMINAL_VELOCITY: 30, // m/s
   },
   CAMERA: {
     FOLLOW_OFFSET_Y: -200,
