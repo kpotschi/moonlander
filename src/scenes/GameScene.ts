@@ -15,7 +15,7 @@ import {
   mpx,
 } from "phaser-box2d";
 
-import Lander from "../entities/Lander.js";
+import Lander from "../entities/lander/Lander.js";
 import { PhaserDebugDraw } from "../lib/PhaserDebugDraw.js";
 import World from "../systems/World";
 import Controls from "../systems/Controls";
@@ -23,26 +23,33 @@ import { WorldConfig } from "phaser-box2d/types/physics.js";
 import Altimeter from "../systems/ui/Altimeter.js";
 import UiManager from "../systems/ui/UiManager.js";
 import { CONSTANTS } from "../config/CONSTANTS.js";
+import { Debugger } from "../systems/debug/Debugger.js";
 
 export default class GameScene extends Phaser.Scene {
   public world: World;
-  private debug: Phaser.GameObjects.Graphics;
-  private debugDraw: PhaserDebugDraw;
+  // private debug: Phaser.GameObjects.Graphics;
+  // private debugDraw: PhaserDebugDraw;
   public lander: Lander;
   public controls: Controls;
   public altimeter: Altimeter;
   public ui: UiManager;
   private tileGrid: Phaser.GameObjects.TileSprite;
+  readonly debugMode: boolean = false;
+  private debugger: Debugger;
+
   constructor() {
     super();
+    this.debugMode = window.location.pathname.includes("debug");
   }
 
   init() {
     this.world = new World(this);
     this.ui = new UiManager(this);
-    this.createDebug();
     this.controls = new Controls(this);
     this.lander = new Lander(this);
+    if (this.debugMode) {
+      this.debugger = Debugger.getInstance(this);
+    }
   }
 
   preload() {
@@ -52,22 +59,10 @@ export default class GameScene extends Phaser.Scene {
 
   async create() {
     this.createBackground();
-
     this.createGround();
     this.lander.create();
     this.ui.create();
-  }
-
-  private createDebug() {
-    this.debug = this.add.graphics();
-
-    this.debugDraw = new PhaserDebugDraw(
-      this,
-      this.debug,
-      1280,
-      720,
-      GetWorldScale()
-    );
+    if (this.debugger) this.debugger.start();
   }
 
   private createBackground() {
@@ -125,16 +120,16 @@ export default class GameScene extends Phaser.Scene {
     const worldId = this.world.worldId;
     const worldConfig: WorldConfig & any = { worldId, deltaTime: delta };
     WorldStep(worldConfig);
-    this.debug.clear();
     this.ui.update();
     UpdateWorldSprites(this.world.worldNumber);
     if (this.lander) this.lander.update();
-    b2World_Draw(worldId, this.debugDraw);
 
     // update grid backround
     if (this.tileGrid) {
       this.tileGrid.tilePositionX = this.cameras.main.scrollX;
       this.tileGrid.tilePositionY = this.cameras.main.scrollY;
     }
+
+    if (this.debugMode) this.debugger.update();
   }
 }

@@ -825,6 +825,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"lil-gui@npm:^0.20.0":
+  version: 0.20.0
+  resolution: "lil-gui@npm:0.20.0"
+  checksum: 10c0/17d1262baa547c15fb783af1e0d33e171f5323f83425692286c3e7167cbf075448dd7dbc48100862ff4dc4adecfd274b8fdb07e738ce308a4a724584ba70c205
+  languageName: node
+  linkType: hard
+
 "lru-cache@npm:^10.0.1, lru-cache@npm:^10.2.0":
   version: 10.4.3
   resolution: "lru-cache@npm:10.4.3"
@@ -950,6 +957,7 @@ __metadata:
   resolution: "moonlander@workspace:."
   dependencies:
     "@types/node": "npm:^22.15.29"
+    lil-gui: "npm:^0.20.0"
     phaser: "npm:^4.0.0-rc.4"
     phaser-box2d: "npm:^1.1.0"
     vite: "npm:^6.3.5"

@@ -1,70 +1,36 @@
+import GUI from "lil-gui";
 import {
-  AddSpriteToWorld,
   b2Body_ApplyForce,
   b2Body_ApplyTorque,
+  b2Body_GetAngularDamping,
   b2Body_GetAngularVelocity,
   b2Body_GetLinearVelocity,
   b2Body_GetPosition,
   b2Body_GetRotation,
-  b2Body_SetAngularVelocity,
+  b2Body_SetAngularDamping,
   b2Body_SetLinearVelocity,
-  b2BodyId,
-  b2BodyType,
   b2CreateRevoluteJoint,
   b2DefaultRevoluteJointDef,
   b2JointId,
-  b2Polygon,
   b2RevoluteJoint_EnableLimit,
-  b2RevoluteJoint_EnableMotor,
-  b2RevoluteJoint_GetAngle,
-  b2RevoluteJoint_GetMotorSpeed,
   b2RevoluteJoint_SetLimits,
-  b2RevoluteJoint_SetMaxMotorTorque,
-  b2RevoluteJoint_SetMotorSpeed,
-  b2ShapeId,
   b2Vec2,
-  CreatePhysicsEditorShape,
   mpx,
   pxm,
 } from "phaser-box2d";
-import { CONSTANTS } from "../config/CONSTANTS.js";
-import GameScene from "../scenes/GameScene";
-import { b2GetJoint } from "phaser-box2d/types/joint_c.js";
+import { CONSTANTS } from "../../config/CONSTANTS.js";
+import GameScene from "../../scenes/GameScene.js";
+import { IDebug } from "../../systems/debug/debug.js";
+import { Debuggable } from "../../systems/debug/Debugger.js";
+import { JointsCreateConfig } from "./Lander.d.js";
+import { createParts, Part } from "./LanderParts.js";
 
-type BodyObject = {
-  bodyId: b2BodyId;
-  shapeId: b2ShapeId;
-  object: b2Polygon;
-};
-
-type Part = {
-  name: string;
-  gameObject: Phaser.GameObjects.Sprite;
-  body: BodyObject;
-};
-
-type PartCreateConfig = {
-  name: string; // Unique name for the part
-  sprite: string;
-  position: Phaser.Types.Math.Vector2Like;
-  dataKey: string; // Key to access the XML data for this part
-};
-
-type JointsCreateConfig = {
-  bodyA: string;
-  bodyB: string;
-  localAnchorA: Phaser.Types.Math.Vector2Like;
-  localAnchorB: Phaser.Types.Math.Vector2Like;
-  referenceAngle?: number; // Optional, if you need to set a specific angle for the joint
-  angleLimit?: number; // Optional, if you need to set an angle limit for the joint
-  motorTorque?: number; // Optional, if you want to enable motor torque
-};
-
-export default class Lander {
+@Debuggable
+export default class Lander implements IDebug {
   private parts: Part[] = [];
   private joints: Record<string, b2JointId> = {};
-  private physicsData: XMLDocument;
-  private corpus: Part;
+  public physicsData: XMLDocument;
+  public corpus: Part;
 
   constructor(readonly scene: GameScene) {}
 
@@ -90,9 +56,22 @@ export default class Lander {
       "moonlander_data"
     ) as XMLDocument;
 
-    this.createParts();
+    createParts(this);
     this.createJoints();
     this.setupCameras();
+
+    this.setupAngularMovement();
+    // Debugger.getInstance(this.scene).addDebugMethod(this.debug.bind(this));
+  }
+
+  private setupAngularMovement() {
+    // limit the maximum rotation
+
+    // makes the body harder to rotate in general
+    b2Body_SetAngularDamping(
+      this.corpus.body.bodyId,
+      CONSTANTS.LANDER.ANGULAR_DAMPING
+    );
   }
 
   private setupCameras() {
@@ -106,84 +85,6 @@ export default class Lander {
       0,
       CONSTANTS.CAMERA.FOLLOW_OFFSET_Y
     );
-  }
-
-  private createPart(config: PartCreateConfig): Part {
-    const gameObject = this.scene.add
-      .sprite(config.position.x, config.position.y, config.sprite)
-      .setDepth(10);
-
-    const body = CreatePhysicsEditorShape({
-      worldId: this.scene.world.worldId,
-      type: b2BodyType.b2_dynamicBody,
-      key: config.dataKey,
-      xmlData: this.physicsData,
-      position: new b2Vec2(pxm(config.position.x), pxm(config.position.y)),
-    });
-
-    const part = { name: config.name, gameObject, body };
-
-    this.addPart(part);
-
-    AddSpriteToWorld(this.scene.world.worldNumber, gameObject, body);
-
-    return part;
-  }
-
-  private createParts() {
-    // corpus
-    this.corpus = this.createPart({
-      name: "corpus",
-      sprite: "moonlander",
-      position: { x: this.scene.sys.canvas.width / 2, y: 100 },
-      dataKey: "moonlander_placeholder",
-    });
-
-    const corpusPosition = b2Body_GetPosition(this.corpus.body.bodyId);
-
-    // legs
-    const legOffset = { x: 2.5, y: 3.7 };
-
-    this.createPart({
-      name: "leg_left",
-      sprite: "moonlander_leg",
-      position: {
-        x: mpx(corpusPosition.x - legOffset.x),
-        y: mpx(-corpusPosition.y + legOffset.y),
-      },
-      dataKey: "moonlander_leg_placeholder",
-    });
-
-    this.createPart({
-      name: "leg_right",
-      sprite: "moonlander_leg",
-      position: {
-        x: mpx(corpusPosition.x + legOffset.x),
-        y: mpx(-corpusPosition.y + legOffset.y),
-      },
-      dataKey: "moonlander_leg_placeholder",
-    });
-
-    //feet
-    this.createPart({
-      name: "foot_left",
-      sprite: "moonlander_foot",
-      position: {
-        x: mpx(corpusPosition.x - legOffset.x),
-        y: mpx(-corpusPosition.y + legOffset.y),
-      },
-      dataKey: "moonlander_foot_placeholder",
-    });
-
-    this.createPart({
-      name: "foot_right",
-      sprite: "moonlander_foot",
-      position: {
-        x: mpx(corpusPosition.x + legOffset.x),
-        y: mpx(-corpusPosition.y + legOffset.y),
-      },
-      dataKey: "moonlander_foot_placeholder",
-    });
   }
 
   private createJoints() {
@@ -276,15 +177,73 @@ export default class Lander {
     return new Phaser.Math.Vector2(mpx(position.x), mpx(-position.y));
   }
 
+  private updateAngularMovement() {
+    const desiredAngle = 0;
+    const angle = Phaser.Math.Angle.Wrap(this.corpus.gameObject.rotation);
+    const angleDiff = angle - desiredAngle;
+    const angularVelocity = b2Body_GetAngularVelocity(this.corpus.body.bodyId);
+    const correctionTorque = -angleDiff * 10 - angularVelocity * 2;
+
+    // works like a sudden kick with no easing - doesn't seem to be correct for what we need
+    // b2Body_ApplyAngularImpulse(this.corpus.body.bodyId, correctionTorque, true);
+    b2Body_ApplyTorque(this.corpus.body.bodyId, correctionTorque, true);
+  }
+
   update() {
     // this.updateLegMotors();
     if (this.scene.controls.thrust) {
-      const force = new b2Vec2(0, 2000);
-      const position = b2Body_GetPosition(this.corpus.body.bodyId);
-      b2Body_ApplyForce(this.corpus.body.bodyId, force, position, true);
+      const body = this.corpus.body.bodyId;
+      const pos = b2Body_GetPosition(body);
+      const rot = b2Body_GetRotation(body);
+      const angle = Math.atan2(rot.s, rot.c);
+
+      // Offset from center to bottom (half lander height, adjust as needed)
+      const offsetY = -3.5; // meters, negative for "down" in local space
+      const thrusterX = pos.x + Math.sin(angle) * offsetY;
+      const thrusterY = pos.y - Math.cos(angle) * offsetY;
+
+      const thrustMagnitude = CONSTANTS.LANDER.THRUST.UPWARDS;
+      const force = new b2Vec2(
+        -Math.sin(angle) * thrustMagnitude,
+        Math.cos(angle) * thrustMagnitude
+      );
+
+      b2Body_ApplyForce(body, force, new b2Vec2(thrusterX, thrusterY), true);
     }
 
+    // Side thrusters (controllable, fires left/right relative to lander)
+    const steer = this.scene.controls.steer; // -1 for left, +1 for right, 0 for none
+    if (steer !== 0) {
+      const body = this.corpus.body.bodyId;
+      const pos = b2Body_GetPosition(body);
+      const rot = b2Body_GetRotation(body);
+      const angle = Math.atan2(rot.s, rot.c);
+
+      // Offset from center to side (half lander width, adjust as needed)
+      const offsetX = 5; // meters, positive for right, negative for left
+      // Fire from the opposite side for visual realism (optional)
+      const thrusterX = pos.x + Math.cos(angle) * -offsetX * steer;
+      const thrusterY = pos.y + Math.sin(angle) * -offsetX * steer;
+
+      // Thrust direction: perpendicular to "down" (right is +, left is -)
+      const sideThrustMagnitude = CONSTANTS.LANDER.THRUST.SIDEWAYS;
+      const force = new b2Vec2(
+        Math.cos(angle) * sideThrustMagnitude * steer,
+        Math.sin(angle) * sideThrustMagnitude * steer
+      );
+
+      b2Body_ApplyForce(body, force, new b2Vec2(thrusterX, thrusterY), true);
+    }
+
+    // if (this.scene.controls.thrust) {
+    //   const force = new b2Vec2(0, 2000);
+    //   const position = b2Body_GetPosition(this.corpus.body.bodyId);
+    //   b2Body_ApplyForce(this.corpus.body.bodyId, force, position, true);
+    // }
+
     this.checkTerminalVelocity();
+    this.updateAngularMovement();
+
     // // Rotation (steering)
     // const steer = this.scene.controls.steer;
     // if (steer !== 0) {
@@ -314,6 +273,22 @@ export default class Lander {
     //     b2Body_ApplyTorque(this.corpus.bodyId, correctionTorque, true);
     //   }
     // }
+  }
+
+  public debug(gui: GUI) {
+    const debugObject = {
+      angularDamping: b2Body_GetAngularDamping(this.corpus.body.bodyId),
+    };
+
+    const debugFolder = gui.addFolder("Lander");
+    debugFolder.add(debugObject, "angularDamping", 0, 10);
+    //   .step(0.1)
+    //   .onFinishChange((value: number) => {
+    //     console.log("hehe");
+
+    //     b2Body_SetAngularDamping(this.corpus.body.bodyId, value);
+    //   });
+    debugFolder.open();
   }
 
   private checkTerminalVelocity() {
@@ -382,7 +357,7 @@ export default class Lander {
     return part;
   }
 
-  private addPart(part: Part) {
+  public addPart(part: Part) {
     this.parts.push(part);
   }
 }

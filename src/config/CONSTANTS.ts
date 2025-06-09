@@ -1,5 +1,7 @@
 export const CONSTANTS = {
   LANDER: {
+    ANGULAR_DAMPING: 5, // angular damping
+    THRUST: { UPWARDS: 800, SIDEWAYS: 200 }, // nM
     CORPUS: {
       JOINTS: {
         ANCHORS: {
@@ -8,7 +10,6 @@ export const CONSTANTS = {
         },
       },
     },
-
     LEGS: {
       JOINTS: {
         REFERENCE_ANGLE: 30, // degrees

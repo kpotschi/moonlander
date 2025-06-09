@@ -10,7 +10,8 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "strictPropertyInitialization": false
+    "strictPropertyInitialization": false,
+    "experimentalDecorators": true
     // "typeRoots": ["./node_modules/@types", "./src/lib/types"]
   },
   // "include": ["src/**/*", "src/lib/types/**/*"],

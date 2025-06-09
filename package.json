@@ -3,10 +3,12 @@
   "packageManager": "yarn@4.9.1",
   "scripts": {
     "dev": "vite --open",
+    "debug": "vite --open debug",
     "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
+    "lil-gui": "^0.20.0",
     "phaser": "^4.0.0-rc.4",
     "phaser-box2d": "^1.1.0"
   },

@@ -3,3 +3,8 @@
   margin: 0;
   box-sizing: border-box;
 }
+
+.lil-gui {
+  pointer-events: auto !important;
+  z-index: 1000 !important;
+}
