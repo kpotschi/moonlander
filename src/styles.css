@@ -5,6 +5,10 @@
 }
 
 .lil-gui {
-  pointer-events: auto !important;
+  pointer-events: none !important;
   z-index: 1000 !important;
+}
+
+.lil-gui > * {
+  pointer-events: auto; /* only actual GUI components are interactive */
 }

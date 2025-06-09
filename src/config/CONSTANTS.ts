@@ -1,7 +1,11 @@
 export const CONSTANTS = {
   LANDER: {
-    ANGULAR_DAMPING: 5, // angular damping
-    THRUST: { UPWARDS: 800, SIDEWAYS: 200 }, // nM
+    FUEL: {
+      STARTING: 1000,
+      CONSUMPTION: 0.03,
+    }, // fuel consumed per second when thrusting
+    ANGULAR_DAMPING: 3, // angular damping
+    THRUST: { UPWARDS: 800, SIDEWAYS: 250 }, // nM
     CORPUS: {
       JOINTS: {
         ANCHORS: {

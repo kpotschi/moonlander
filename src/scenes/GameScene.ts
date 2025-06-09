@@ -33,10 +33,10 @@ export default class GameScene extends Phaser.Scene {
   public controls: Controls;
   public altimeter: Altimeter;
   public ui: UiManager;
-  private tileGrid: Phaser.GameObjects.TileSprite;
+  // private tileGrid: Phaser.GameObjects.TileSprite;
   readonly debugMode: boolean = false;
   private debugger: Debugger;
-
+  private background: Phaser.GameObjects.Image;
   constructor() {
     super();
     this.debugMode = window.location.pathname.includes("debug");
@@ -47,6 +47,7 @@ export default class GameScene extends Phaser.Scene {
     this.ui = new UiManager(this);
     this.controls = new Controls(this);
     this.lander = new Lander(this);
+
     if (this.debugMode) {
       this.debugger = Debugger.getInstance(this);
     }
@@ -55,6 +56,8 @@ export default class GameScene extends Phaser.Scene {
   preload() {
     this.lander.preload();
     this.ui.preload();
+
+    this.load.image("background", "./images/background/lvl_1.png");
   }
 
   async create() {
@@ -62,41 +65,32 @@ export default class GameScene extends Phaser.Scene {
     this.createGround();
     this.lander.create();
     this.ui.create();
+    this.setupCameras();
     if (this.debugger) this.debugger.start();
   }
 
-  private createBackground() {
-    const gridSpacing = mpx(10);
-    const textureWidth = gridSpacing * 4;
-    const textureHeight = gridSpacing * 4;
+  private setupCameras() {
+    this.ui.camera.ignore(this.lander.parts.map((part) => part.gameObject));
 
-    const graphics = this.make.graphics({ x: 0, y: 0 });
-    graphics.lineStyle(4, 0xffffff, 0.1);
-
-    // Draw horizontal lines
-    for (let y = 0; y <= textureHeight; y += gridSpacing) {
-      graphics.lineBetween(0, y, textureWidth, y);
-    }
-
-    // Draw vertical lines
-    for (let x = 0; x <= textureWidth; x += gridSpacing) {
-      graphics.lineBetween(x, 0, x, textureHeight);
-    }
-
-    // Create a render texture and draw graphics onto it
-    const rt = this.make.renderTexture(
-      { width: textureWidth, height: textureHeight },
-      false
+    this.cameras.main.startFollow(
+      this.lander.corpus.gameObject,
+      true,
+      0.05,
+      0.05,
+      0,
+      CONSTANTS.CAMERA.FOLLOW_OFFSET_Y
     );
-    rt.draw(graphics);
-    rt.render();
-    // Add the grid as a tile sprite that follows the camera
-    this.tileGrid = this.add.tileSprite(0, 0, 4000, 4000, rt.texture.key);
-    this.tileGrid.setDepth(-1);
-    this.tileGrid.setOrigin(0);
-    this.tileGrid.setScrollFactor(0);
+  }
 
-    this.ui.camera.ignore(this.tileGrid);
+  private createBackground() {
+    this.background = this.add.image(
+      this.sys.canvas.width / 2,
+      this.sys.canvas.height / 2,
+      "background"
+    );
+    this.background.setScrollFactor(0.02);
+    this.background.setDepth(-1).setScale(2);
+    this.ui.camera.ignore(this.background);
   }
 
   private createGround() {
@@ -116,19 +110,13 @@ export default class GameScene extends Phaser.Scene {
     });
   }
 
-  update(time: number, delta: number) {
+  update(time: number, deltaTime: number) {
     const worldId = this.world.worldId;
-    const worldConfig: WorldConfig & any = { worldId, deltaTime: delta };
+    const worldConfig: WorldConfig & any = { worldId, deltaTime };
     WorldStep(worldConfig);
     this.ui.update();
     UpdateWorldSprites(this.world.worldNumber);
-    if (this.lander) this.lander.update();
-
-    // update grid backround
-    if (this.tileGrid) {
-      this.tileGrid.tilePositionX = this.cameras.main.scrollX;
-      this.tileGrid.tilePositionY = this.cameras.main.scrollY;
-    }
+    if (this.lander) this.lander.update(deltaTime);
 
     if (this.debugMode) this.debugger.update();
   }

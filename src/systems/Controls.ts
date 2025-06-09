@@ -23,11 +23,11 @@ export default class Controls {
 
   // Returns true if thrust (up) is pressed
   get thrust(): boolean {
-    return (
-      this.cursors.up.isDown ||
-      this.keyW.isDown ||
-      this.scene.input.activePointer.isDown
-    );
+    const pointer = this.scene.input.activePointer;
+    const isCanvas = pointer.downElement === this.scene.game.canvas;
+    const canvasPressed = isCanvas && pointer.isDown;
+
+    return this.cursors.up.isDown || this.keyW.isDown || canvasPressed;
   }
 
   // Returns -1 for left, 1 for right, 0 for none

@@ -24,13 +24,15 @@ import { IDebug } from "../../systems/debug/debug.js";
 import { Debuggable } from "../../systems/debug/Debugger.js";
 import { JointsCreateConfig } from "./Lander.d.js";
 import { createParts, Part } from "./LanderParts.js";
+import LanderSystems from "./LanderSystems.js";
 
 @Debuggable
 export default class Lander implements IDebug {
-  private parts: Part[] = [];
+  public parts: Part[] = [];
   private joints: Record<string, b2JointId> = {};
   public physicsData: XMLDocument;
   public corpus: Part;
+  private systems: LanderSystems;
 
   constructor(readonly scene: GameScene) {}
 
@@ -58,8 +60,7 @@ export default class Lander implements IDebug {
 
     createParts(this);
     this.createJoints();
-    this.setupCameras();
-
+    this.systems = new LanderSystems(this.scene, this);
     this.setupAngularMovement();
     // Debugger.getInstance(this.scene).addDebugMethod(this.debug.bind(this));
   }
@@ -71,19 +72,6 @@ export default class Lander implements IDebug {
     b2Body_SetAngularDamping(
       this.corpus.body.bodyId,
       CONSTANTS.LANDER.ANGULAR_DAMPING
-    );
-  }
-
-  private setupCameras() {
-    this.scene.ui.camera.ignore(this.parts.map((part) => part.gameObject));
-
-    this.scene.cameras.main.startFollow(
-      this.corpus.gameObject,
-      true,
-      0.05,
-      0.05,
-      0,
-      CONSTANTS.CAMERA.FOLLOW_OFFSET_Y
     );
   }
 
@@ -189,90 +177,17 @@ export default class Lander implements IDebug {
     b2Body_ApplyTorque(this.corpus.body.bodyId, correctionTorque, true);
   }
 
-  update() {
-    // this.updateLegMotors();
-    if (this.scene.controls.thrust) {
-      const body = this.corpus.body.bodyId;
-      const pos = b2Body_GetPosition(body);
-      const rot = b2Body_GetRotation(body);
-      const angle = Math.atan2(rot.s, rot.c);
+  public getFuel(): number {
+    return this.systems.fuel;
+  }
 
-      // Offset from center to bottom (half lander height, adjust as needed)
-      const offsetY = -3.5; // meters, negative for "down" in local space
-      const thrusterX = pos.x + Math.sin(angle) * offsetY;
-      const thrusterY = pos.y - Math.cos(angle) * offsetY;
+  update(deltaTime: number) {
+    if (this.scene.controls.thrust) this.systems.thrust(deltaTime);
 
-      const thrustMagnitude = CONSTANTS.LANDER.THRUST.UPWARDS;
-      const force = new b2Vec2(
-        -Math.sin(angle) * thrustMagnitude,
-        Math.cos(angle) * thrustMagnitude
-      );
-
-      b2Body_ApplyForce(body, force, new b2Vec2(thrusterX, thrusterY), true);
-    }
-
-    // Side thrusters (controllable, fires left/right relative to lander)
-    const steer = this.scene.controls.steer; // -1 for left, +1 for right, 0 for none
-    if (steer !== 0) {
-      const body = this.corpus.body.bodyId;
-      const pos = b2Body_GetPosition(body);
-      const rot = b2Body_GetRotation(body);
-      const angle = Math.atan2(rot.s, rot.c);
-
-      // Offset from center to side (half lander width, adjust as needed)
-      const offsetX = 5; // meters, positive for right, negative for left
-      // Fire from the opposite side for visual realism (optional)
-      const thrusterX = pos.x + Math.cos(angle) * -offsetX * steer;
-      const thrusterY = pos.y + Math.sin(angle) * -offsetX * steer;
-
-      // Thrust direction: perpendicular to "down" (right is +, left is -)
-      const sideThrustMagnitude = CONSTANTS.LANDER.THRUST.SIDEWAYS;
-      const force = new b2Vec2(
-        Math.cos(angle) * sideThrustMagnitude * steer,
-        Math.sin(angle) * sideThrustMagnitude * steer
-      );
-
-      b2Body_ApplyForce(body, force, new b2Vec2(thrusterX, thrusterY), true);
-    }
-
-    // if (this.scene.controls.thrust) {
-    //   const force = new b2Vec2(0, 2000);
-    //   const position = b2Body_GetPosition(this.corpus.body.bodyId);
-    //   b2Body_ApplyForce(this.corpus.body.bodyId, force, position, true);
-    // }
-
+    const vector = this.scene.controls.steer; // -1 for left, +1 for right, 0 for none
+    if (vector !== 0) this.systems.steer(deltaTime, vector);
     this.checkTerminalVelocity();
     this.updateAngularMovement();
-
-    // // Rotation (steering)
-    // const steer = this.scene.controls.steer;
-    // if (steer !== 0) {
-    //   const torque = 300; // Adjust for feel
-    //   b2Body_ApplyTorque(this.corpus.bodyId, -steer * torque, true);
-    // }
-    // // // --- NEW: Angular damping ---
-    // // // If your API supports it, set angular damping once (not every frame)
-    // // // Example: b2Body_SetAngularDamping(this.corpus.bodyId, 2.0);
-    // // // --- Clamp angular velocity ---
-    // if (this.corpus) {
-    //   const maxAngVel = 2.5; // radians/sec, adjust for feel
-    //   const angVel = b2Body_GetAngularVelocity(this.corpus.bodyId);
-    //   if (Math.abs(angVel) > maxAngVel) {
-    //     b2Body_SetAngularVelocity(
-    //       this.corpus.bodyId,
-    //       Math.sign(angVel) * maxAngVel
-    //     );
-    //   }
-    //   // --- Optional: Auto-stabilization ---
-    //   // If the lander is tilted more than 45 degrees, apply corrective torque
-    //   const rot = b2Body_GetRotation(this.corpus.bodyId); // { c: ..., s: ... }
-    //   const angle = Math.atan2(rot.s, rot.c); // angle in radians
-    //   const maxTilt = Math.PI / 4; // 45 degrees
-    //   if (Math.abs(angle) > maxTilt) {
-    //     const correctionTorque = -angle * 50; // Proportional controller, tune as needed
-    //     b2Body_ApplyTorque(this.corpus.bodyId, correctionTorque, true);
-    //   }
-    // }
   }
 
   public debug(gui: GUI) {
