@@ -37,7 +37,7 @@ export default class GameScene extends Phaser.Scene {
   // private tileGrid: Phaser.GameObjects.TileSprite;
   readonly debugMode: boolean = false;
   private debugger: Debugger;
-  private background: Background;
+  public background: Background;
 
   constructor() {
     super();
@@ -62,25 +62,18 @@ export default class GameScene extends Phaser.Scene {
   }
 
   async create() {
+    this.background.create();
+    this.world.setWorldSize();
     this.createGround();
     this.lander.create();
     this.ui.create();
     this.setupCameras();
-    this.background.create();
     if (this.debugger) this.debugger.start();
   }
 
   private setupCameras() {
     this.ui.camera.ignore(this.lander.parts.map((part) => part.gameObject));
-
-    this.cameras.main.startFollow(
-      this.lander.corpus.gameObject,
-      true
-      // 0.05,
-      // 0.05,
-      // 0,
-      // CONSTANTS.CAMERA.FOLLOW_OFFSET_Y
-    );
+    this.cameras.main.startFollow(this.lander.corpus.gameObject, true);
   }
 
   private createGround() {
@@ -93,7 +86,7 @@ export default class GameScene extends Phaser.Scene {
       type: STATIC,
       bodyDef: groundBodyDef,
       position: pxmVec2(0, 0),
-      size: new b2Vec2(20, 1),
+      size: new b2Vec2(10, 1),
       density: 1.0,
       friction: 0.5,
       color: b2HexColor.b2_colorLawnGreen,
@@ -107,7 +100,7 @@ export default class GameScene extends Phaser.Scene {
     this.ui.update();
     UpdateWorldSprites(this.world.worldNumber);
     if (this.lander) this.lander.update(deltaTime);
-
+    this.background.update();
     if (this.debugMode) this.debugger.update();
   }
 }

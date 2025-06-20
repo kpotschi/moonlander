@@ -190,20 +190,21 @@ export default class Lander implements IDebug {
     this.updateAngularMovement();
 
     this.checkWorldWrap();
+    // console.log("position", this.getPosition());
   }
 
   private checkWorldWrap() {
     const body = this.corpus.body.bodyId;
     const corpusPos = b2Body_GetPosition(body);
-    const WORLD_WIDTH = 100; // meters, adjust as needed;
-
-    if (Math.abs(corpusPos.x) > WORLD_WIDTH * 0.5) {
-      console.log("World wrap detected", corpusPos.x);
-
+    const worldSize = this.scene.world.worldSizeM; // meters, adjust as needed;
+    // console.log(corpusPos.x, this.scene.cameras.main.scrollX);
+    if (Math.abs(corpusPos.x) > worldSize.width * 0.5) {
       this.parts.forEach((part: Part) => {
         const partPos = b2Body_GetPosition(part.body.bodyId);
         const newX =
-          corpusPos.x < 0 ? partPos.x + WORLD_WIDTH : partPos.x - WORLD_WIDTH;
+          corpusPos.x < 0
+            ? partPos.x + worldSize.width
+            : partPos.x - worldSize.width;
 
         b2Body_SetTransform(part.body.bodyId, new b2Vec2(newX, partPos.y));
       });
