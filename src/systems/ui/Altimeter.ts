@@ -39,11 +39,34 @@ export default class Altimeter extends Phaser.GameObjects.Container {
 
     this.scene.add.existing(this);
     this.scene.cameras.main.ignore(this);
+
+    this.createAltimeterText();
+    this.scene.cameras.main.ignore(this.text);
+  }
+
+  createAltimeterText(): void {
+    const text = this.getAltitudeText(this.scene.lander.getAltitude());
+    this.text = this.scene.add
+      .text(this.scene.sys.canvas.width - 20, 70, text, {
+        fontSize: "32px",
+        fontFamily: "Monospace",
+      })
+      .setOrigin(1, 0);
+  }
+
+  public setAltitudeText(value: number): void {
+    const altitudeText = this.getAltitudeText(value);
+    this.text.setText(altitudeText);
+  }
+
+  private getAltitudeText(value: number): string {
+    return `Altitude: ${value.toFixed()} m`;
   }
 
   update(): void {
     const altitude = this.scene.lander.getAltitude();
     this.drawIndicator(altitude);
+    this.setAltitudeText(altitude);
   }
 
   private drawIndicator(altitude: number): void {

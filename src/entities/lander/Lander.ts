@@ -9,6 +9,7 @@ import {
   b2Body_GetRotation,
   b2Body_SetAngularDamping,
   b2Body_SetLinearVelocity,
+  b2Body_SetTransform,
   b2CreateRevoluteJoint,
   b2DefaultRevoluteJointDef,
   b2JointId,
@@ -183,11 +184,30 @@ export default class Lander implements IDebug {
 
   update(deltaTime: number) {
     if (this.scene.controls.thrust) this.systems.thrust(deltaTime);
-
     const vector = this.scene.controls.steer; // -1 for left, +1 for right, 0 for none
     if (vector !== 0) this.systems.steer(deltaTime, vector);
     this.checkTerminalVelocity();
     this.updateAngularMovement();
+
+    this.checkWorldWrap();
+  }
+
+  private checkWorldWrap() {
+    const body = this.corpus.body.bodyId;
+    const corpusPos = b2Body_GetPosition(body);
+    const WORLD_WIDTH = 100; // meters, adjust as needed;
+
+    if (Math.abs(corpusPos.x) > WORLD_WIDTH * 0.5) {
+      console.log("World wrap detected", corpusPos.x);
+
+      this.parts.forEach((part: Part) => {
+        const partPos = b2Body_GetPosition(part.body.bodyId);
+        const newX =
+          corpusPos.x < 0 ? partPos.x + WORLD_WIDTH : partPos.x - WORLD_WIDTH;
+
+        b2Body_SetTransform(part.body.bodyId, new b2Vec2(newX, partPos.y));
+      });
+    }
   }
 
   public debug(gui: GUI) {

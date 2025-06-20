@@ -6,9 +6,11 @@ import {
   CreatePhysicsEditorShape,
   mpx,
   pxm,
+  pxmVec2,
 } from "phaser-box2d";
 import Lander from "./Lander";
 import { BodyObject } from "./Lander.d";
+import { CONSTANTS } from "../../config/CONSTANTS";
 
 export type Part = {
   name: string;
@@ -47,10 +49,13 @@ const createPart = (lander: Lander, config: PartCreateConfig): Part => {
 
 export const createParts = (lander: Lander) => {
   // corpus
+
+  const { x: startX, y: startY } = CONSTANTS.LANDER.DEFAULT_STARTING_POSITION;
+  CONSTANTS.LANDER.DEFAULT_STARTING_POSITION;
   lander.corpus = createPart(lander, {
     name: "corpus",
     sprite: "moonlander",
-    position: { x: lander.scene.sys.canvas.width / 2, y: 100 },
+    position: CONSTANTS.LANDER.DEFAULT_STARTING_POSITION, // in px
     dataKey: "moonlander_placeholder",
   });
 
@@ -59,12 +64,15 @@ export const createParts = (lander: Lander) => {
   // legs
   const legOffset = { x: 2.5, y: 3.7 };
 
+  console.log("left leg x", mpx(corpusPosition.x - legOffset.x));
+  console.log("left leg y", mpx(-corpusPosition.y + legOffset.y));
+
   createPart(lander, {
     name: "leg_left",
     sprite: "moonlander_leg",
     position: {
       x: mpx(corpusPosition.x - legOffset.x),
-      y: mpx(-corpusPosition.y + legOffset.y),
+      y: mpx(corpusPosition.y - legOffset.y),
     },
     dataKey: "moonlander_leg_placeholder",
   });
@@ -74,7 +82,7 @@ export const createParts = (lander: Lander) => {
     sprite: "moonlander_leg",
     position: {
       x: mpx(corpusPosition.x + legOffset.x),
-      y: mpx(-corpusPosition.y + legOffset.y),
+      y: mpx(corpusPosition.y - legOffset.y),
     },
     dataKey: "moonlander_leg_placeholder",
   });
@@ -85,7 +93,7 @@ export const createParts = (lander: Lander) => {
     sprite: "moonlander_foot",
     position: {
       x: mpx(corpusPosition.x - legOffset.x),
-      y: mpx(-corpusPosition.y + legOffset.y),
+      y: mpx(corpusPosition.y - legOffset.y),
     },
     dataKey: "moonlander_foot_placeholder",
   });
@@ -95,7 +103,7 @@ export const createParts = (lander: Lander) => {
     sprite: "moonlander_foot",
     position: {
       x: mpx(corpusPosition.x + legOffset.x),
-      y: mpx(-corpusPosition.y + legOffset.y),
+      y: mpx(corpusPosition.y - legOffset.y),
     },
     dataKey: "moonlander_foot_placeholder",
   });

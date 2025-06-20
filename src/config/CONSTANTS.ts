@@ -1,5 +1,6 @@
 export const CONSTANTS = {
   LANDER: {
+    DEFAULT_STARTING_POSITION: { x: 0, y: 800 }, // px
     FUEL: {
       STARTING: 1000,
       CONSUMPTION: 0.03,
