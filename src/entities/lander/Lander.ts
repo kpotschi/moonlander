@@ -197,8 +197,10 @@ export default class Lander implements IDebug {
     const body = this.corpus.body.bodyId;
     const corpusPos = b2Body_GetPosition(body);
     const worldSize = this.scene.world.worldSizeM; // meters, adjust as needed;
-    // console.log(corpusPos.x, this.scene.cameras.main.scrollX);
+
     if (Math.abs(corpusPos.x) > worldSize.width * 0.5) {
+      console.log("congrats, you wrapped around the world!");
+
       this.parts.forEach((part: Part) => {
         const partPos = b2Body_GetPosition(part.body.bodyId);
         const newX =
@@ -208,6 +210,8 @@ export default class Lander implements IDebug {
 
         b2Body_SetTransform(part.body.bodyId, new b2Vec2(newX, partPos.y));
       });
+
+      this.scene.background.updateScrollFactor();
     }
   }
 
