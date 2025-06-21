@@ -2,7 +2,7 @@ import { CONSTANTS } from "../../config/CONSTANTS";
 import GameScene from "../../scenes/GameScene";
 
 export default class Background {
-  private bgSprite: Phaser.GameObjects.TileSprite;
+  public bgSprite: Phaser.GameObjects.TileSprite;
   constructor(readonly scene: GameScene) {}
 
   preload() {
@@ -22,7 +22,7 @@ export default class Background {
     const cam = this.scene.cameras.main;
 
     const camCenterY = cam.scrollY + cam.height / 2;
-    const landerPosition = this.scene.lander.corpus.gameObject.getCenter();
+    const camCenterX = cam.scrollX + cam.width / 2;
 
     // Y parallax
     const newBgY =
@@ -33,11 +33,26 @@ export default class Background {
 
     // X parallax
     const parallaxFactorX = 0.05;
-    const newBgX = landerPosition.x * parallaxFactorX;
+    const newBgX = camCenterX * parallaxFactorX;
 
     // Use tilePositionX for seamless horizontal wrapping
     this.bgSprite.tilePositionX = newBgX; // Negative because tile position moves opposite to sprite
-    this.bgSprite.x = landerPosition.x; // Keep sprite centered
+    this.bgSprite.x = camCenterX; // Keep sprite centered
+  }
+
+  // In Background class
+  syncWrap(landerX: number) {
+    console.log("sync", this.scene.cameras.main.scrollX, landerX);
+
+    // Update the sprite's X position immediately with the new camera position
+    this.bgSprite.x = this.scene.cameras.main.scrollX;
+
+    // Also update tile position for consistency
+    const parallaxFactorX = 1 - 1 / CONSTANTS.WORLD.SCALE;
+
+    // this.bgSprite.tilePositionX =
+    //   newCamX + (this.scene.cameras.main.width / 2) * parallaxFactorX;
+    // console.log("wrap", this.bgSprite.tilePositionX);
   }
 
   public getBgSize() {

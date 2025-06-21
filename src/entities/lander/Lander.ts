@@ -190,7 +190,6 @@ export default class Lander implements IDebug {
     this.updateAngularMovement();
 
     this.checkWorldWrap();
-    // console.log("position", this.getPosition());
   }
 
   private checkWorldWrap() {
@@ -199,19 +198,22 @@ export default class Lander implements IDebug {
     const worldSize = this.scene.world.worldSizeM; // meters, adjust as needed;
 
     if (Math.abs(corpusPos.x) > worldSize.width * 0.5) {
-      console.log("congrats, you wrapped around the world!");
-
+      const wrappedLeft = corpusPos.x < 0;
       this.parts.forEach((part: Part) => {
         const partPos = b2Body_GetPosition(part.body.bodyId);
-        const newX =
-          corpusPos.x < 0
-            ? partPos.x + worldSize.width
-            : partPos.x - worldSize.width;
+        const newX = wrappedLeft
+          ? partPos.x + worldSize.width
+          : partPos.x - worldSize.width;
 
         b2Body_SetTransform(part.body.bodyId, new b2Vec2(newX, partPos.y));
       });
 
-      this.scene.background.updateScrollFactor();
+      if (wrappedLeft) {
+        this.scene.cameras.main.scrollX += mpx(worldSize.width);
+      } else {
+        this.scene.cameras.main.scrollX -= mpx(worldSize.width);
+      }
+      // this.scene.background.updateScrollFactor();
     }
   }
 

@@ -97,11 +97,13 @@ export default class GameScene extends Phaser.Scene {
     const worldId = this.world.worldId;
     const worldConfig: WorldConfig & any = { worldId, deltaTime };
     this.ui.update();
+
     if (this.lander) this.lander.update(deltaTime);
 
     UpdateWorldSprites(this.world.worldNumber);
-    this.background.update();
     if (this.debugMode) this.debugger.update();
+    this.background.update();
+
     WorldStep(worldConfig);
   }
 }

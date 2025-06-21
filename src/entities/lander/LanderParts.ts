@@ -64,9 +64,6 @@ export const createParts = (lander: Lander) => {
   // legs
   const legOffset = { x: 2.5, y: 3.7 };
 
-  console.log("left leg x", mpx(corpusPosition.x - legOffset.x));
-  console.log("left leg y", mpx(-corpusPosition.y + legOffset.y));
-
   createPart(lander, {
     name: "leg_left",
     sprite: "moonlander_leg",
