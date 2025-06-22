@@ -40,21 +40,6 @@ export default class Background {
     this.bgSprite.x = camCenterX; // Keep sprite centered
   }
 
-  // In Background class
-  syncWrap(landerX: number) {
-    console.log("sync", this.scene.cameras.main.scrollX, landerX);
-
-    // Update the sprite's X position immediately with the new camera position
-    this.bgSprite.x = this.scene.cameras.main.scrollX;
-
-    // Also update tile position for consistency
-    const parallaxFactorX = 1 - 1 / CONSTANTS.WORLD.SCALE;
-
-    // this.bgSprite.tilePositionX =
-    //   newCamX + (this.scene.cameras.main.width / 2) * parallaxFactorX;
-    // console.log("wrap", this.bgSprite.tilePositionX);
-  }
-
   public getBgSize() {
     return {
       width: this.bgSprite.width,

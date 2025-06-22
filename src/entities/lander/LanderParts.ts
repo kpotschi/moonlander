@@ -50,12 +50,10 @@ const createPart = (lander: Lander, config: PartCreateConfig): Part => {
 export const createParts = (lander: Lander) => {
   // corpus
 
-  const { x: startX, y: startY } = CONSTANTS.LANDER.DEFAULT_STARTING_POSITION;
-  CONSTANTS.LANDER.DEFAULT_STARTING_POSITION;
   lander.corpus = createPart(lander, {
     name: "corpus",
     sprite: "moonlander",
-    position: CONSTANTS.LANDER.DEFAULT_STARTING_POSITION, // in px
+    position: lander.spawnPoint, // in px
     dataKey: "moonlander_placeholder",
   });
 

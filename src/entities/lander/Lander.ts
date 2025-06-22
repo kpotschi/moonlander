@@ -26,6 +26,7 @@ import { Debuggable } from "../../systems/debug/Debugger.js";
 import { JointsCreateConfig } from "./Lander.d.js";
 import { createParts, Part } from "./LanderParts.js";
 import LanderSystems from "./LanderSystems.js";
+import { LevelData } from "../../config/types.js";
 
 @Debuggable
 export default class Lander implements IDebug {
@@ -34,7 +35,7 @@ export default class Lander implements IDebug {
   public physicsData: XMLDocument;
   public corpus: Part;
   private systems: LanderSystems;
-
+  public spawnPoint: Phaser.Types.Math.Vector2Like;
   constructor(readonly scene: GameScene) {}
 
   public preload() {
@@ -54,7 +55,10 @@ export default class Lander implements IDebug {
     this.scene.load.xml("moonlander_data", "images/moonlander/moonlander.xml");
   }
 
-  public create() {
+  public create(levelData: LevelData) {
+    const spawn = levelData.entities.spawn[0];
+    this.spawnPoint = new Phaser.Math.Vector2(spawn.x, spawn.y);
+
     this.physicsData = this.scene.cache.xml.get(
       "moonlander_data"
     ) as XMLDocument;
@@ -152,14 +156,6 @@ export default class Lander implements IDebug {
 
     return jointId;
   }
-
-  // public applyForce() {
-  //   const force = new b2Vec2(0, 2000);
-  //   const position = b2Body_GetPosition(this.corpus.bodyId);
-
-  //   b2Body_ApplyForce(this.corpus.bodyId, force, position, true);
-  //   // b2Body_SetLinearVelocity(this.corpus.bodyId, force);
-  // }
 
   public getPosition(): Phaser.Types.Math.Vector2Like {
     const position = b2Body_GetPosition(this.corpus.body.bodyId);

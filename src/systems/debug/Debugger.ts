@@ -28,7 +28,7 @@ export class Debugger {
   private constructor(readonly scene: GameScene) {
     this.gui = new GUI();
     this.debugGraphics = scene.add.graphics();
-
+    this.gui.close();
     this.debugDraw = new PhaserDebugDraw(
       scene,
       this.debugGraphics,
