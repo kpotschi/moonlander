@@ -31,9 +31,10 @@ export default class Controls {
   }
 
   // Returns -1 for left, 1 for right, 0 for none
-  get steer(): number {
-    if (this.cursors.left.isDown || this.keyA.isDown) return -1;
-    if (this.cursors.right.isDown || this.keyD.isDown) return 1;
-    return 0;
+  get rotate(): number {
+    const leftPressed = this.cursors.left.isDown || this.keyA.isDown;
+    const rightPressed = this.cursors.right.isDown || this.keyD.isDown;
+
+    return (rightPressed ? 0 : 1) - (leftPressed ? 0 : 1);
   }
 }

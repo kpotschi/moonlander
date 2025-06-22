@@ -40,7 +40,7 @@ export default class GameScene extends Phaser.Scene {
   readonly debugMode: boolean = false;
   private debugger: Debugger;
   public background: Background;
-  private levelData: LevelData;
+  // private levelData: LevelData;
 
   constructor() {
     super();
@@ -59,61 +59,65 @@ export default class GameScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image("star", "./images/star.png");
-    this.load.json(
-      "level-0",
-      "./material/chunk-test/simplified/Level_0/data.json"
-    );
-    this.background.preload();
+    // this.load.image("star", "./images/star.png");
+    // this.load.json(
+    //   "level-0",
+    //   "./material/chunk-test/simplified/Level_0/data.json"
+    // );
+    // this.background.preload();
     this.lander.preload();
-    this.ui.preload();
+    // this.ui.preload();
   }
 
   async create() {
-    this.levelData = this.cache.json.get("level-0");
-    console.log(this.levelData);
-
-    // LevelManager.shapeLevelData(this.levelData);
-    this.createCollectibles();
-    this.background.create();
-    this.world.setWorldSize();
-    this.createGround();
-    this.lander.create(this.levelData);
-    this.ui.create();
+    // this.levelData = this.cache.json.get("level-0");
+    // console.log(this.levelData);
+    // // LevelManager.shapeLevelData(this.levelData);
+    // this.createCollectibles();
+    // this.background.create();
+    // this.world.setWorldSize();
+    // this.createGround();
+    this.lander.create();
+    // this.ui.create();
     this.setupCameras();
+    this.createGround();
     if (this.debugger) this.debugger.start();
   }
 
-  createCollectibles() {
-    const entities = this.levelData.entities;
-    if (entities && entities.star) {
-      entities.star.forEach((star) => {
-        const starSprite = this.add
-          .sprite(star.x, star.y, "star")
-          .setOrigin(0.5, 0.5)
-          .setDepth(10);
-        // console.log(star.x, star.y);
-        this.ui.camera.ignore(starSprite);
-      });
-    }
-  }
+  // createCollectibles() {
+  //   const entities = this.levelData.entities;
+  //   if (entities && entities.star) {
+  //     entities.star.forEach((star) => {
+  //       const starSprite = this.add
+  //         .sprite(star.x, star.y, "star")
+  //         .setOrigin(0.5, 0.5)
+  //         .setDepth(10);
+  //       // console.log(star.x, star.y);
+  //       this.ui.camera.ignore(starSprite);
+  //     });
+  //   }
+  // }
 
   private setupCameras() {
     this.ui.camera.ignore(this.lander.parts.map((part) => part.gameObject));
     this.cameras.main.startFollow(this.lander.corpus.gameObject, true);
+    this.cameras.main.setBounds(
+      0,
+      0,
+      CONSTANTS.WORLD.LEVEL_SIZE.PIXELS.WIDTH,
+      CONSTANTS.WORLD.LEVEL_SIZE.PIXELS.HEIGHT
+    );
   }
 
   private createGround() {
     const groundBodyDef = b2DefaultBodyDef();
 
-    // groundBodyDef.rotation = RotFromRad(-0.06);
-
     CreateBoxPolygon({
       worldId: this.world.worldId,
       type: STATIC,
       bodyDef: groundBodyDef,
-      position: pxmVec2(0, 0),
-      size: new b2Vec2(10, 1),
+      position: new b2Vec2(0, -CONSTANTS.WORLD.LEVEL_SIZE.METERS.HEIGHT),
+      size: new b2Vec2(CONSTANTS.WORLD.LEVEL_SIZE.METERS.WIDTH, 1),
       density: 1.0,
       friction: 0.5,
       color: b2HexColor.b2_colorLawnGreen,
@@ -121,13 +125,13 @@ export default class GameScene extends Phaser.Scene {
   }
 
   update(time: number, deltaTime: number) {
-    // const worldId = this.world.worldId;
-    // const worldConfig: WorldConfig & any = { worldId, deltaTime };
+    const worldId = this.world.worldId;
+    const worldConfig: WorldConfig & any = { worldId, deltaTime };
     // this.ui.update();
-    // if (this.lander) this.lander.update(deltaTime);
-    // UpdateWorldSprites(this.world.worldNumber);
-    // if (this.debugMode) this.debugger.update();
+    if (this.lander) this.lander.update(deltaTime);
+    UpdateWorldSprites(this.world.worldNumber);
+    if (this.debugMode) this.debugger.update();
     // this.background.update();
-    // WorldStep(worldConfig);
+    WorldStep(worldConfig);
   }
 }

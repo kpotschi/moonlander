@@ -53,53 +53,54 @@ export const createParts = (lander: Lander) => {
   lander.corpus = createPart(lander, {
     name: "corpus",
     sprite: "moonlander",
-    position: lander.spawnPoint, // in px
+    position: CONSTANTS.LANDER.DEFAULT_STARTING_POSITION, // in px
     dataKey: "moonlander_placeholder",
   });
 
   const corpusPosition = b2Body_GetPosition(lander.corpus.body.bodyId);
+  console.log(corpusPosition);
 
-  // legs
-  const legOffset = { x: 2.5, y: 3.7 };
+  // // legs
+  // const legOffset = { x: 2.5, y: 3.7 };
 
-  createPart(lander, {
-    name: "leg_left",
-    sprite: "moonlander_leg",
-    position: {
-      x: mpx(corpusPosition.x - legOffset.x),
-      y: mpx(corpusPosition.y - legOffset.y),
-    },
-    dataKey: "moonlander_leg_placeholder",
-  });
+  // createPart(lander, {
+  //   name: "leg_left",
+  //   sprite: "moonlander_leg",
+  //   position: {
+  //     x: mpx(corpusPosition.x - legOffset.x),
+  //     y: mpx(corpusPosition.y - legOffset.y),
+  //   },
+  //   dataKey: "moonlander_leg_placeholder",
+  // });
 
-  createPart(lander, {
-    name: "leg_right",
-    sprite: "moonlander_leg",
-    position: {
-      x: mpx(corpusPosition.x + legOffset.x),
-      y: mpx(corpusPosition.y - legOffset.y),
-    },
-    dataKey: "moonlander_leg_placeholder",
-  });
+  // createPart(lander, {
+  //   name: "leg_right",
+  //   sprite: "moonlander_leg",
+  //   position: {
+  //     x: mpx(corpusPosition.x + legOffset.x),
+  //     y: mpx(corpusPosition.y - legOffset.y),
+  //   },
+  //   dataKey: "moonlander_leg_placeholder",
+  // });
 
-  //feet
-  createPart(lander, {
-    name: "foot_left",
-    sprite: "moonlander_foot",
-    position: {
-      x: mpx(corpusPosition.x - legOffset.x),
-      y: mpx(corpusPosition.y - legOffset.y),
-    },
-    dataKey: "moonlander_foot_placeholder",
-  });
+  // //feet
+  // createPart(lander, {
+  //   name: "foot_left",
+  //   sprite: "moonlander_foot",
+  //   position: {
+  //     x: mpx(corpusPosition.x - legOffset.x),
+  //     y: mpx(corpusPosition.y - legOffset.y),
+  //   },
+  //   dataKey: "moonlander_foot_placeholder",
+  // });
 
-  createPart(lander, {
-    name: "foot_right",
-    sprite: "moonlander_foot",
-    position: {
-      x: mpx(corpusPosition.x + legOffset.x),
-      y: mpx(corpusPosition.y - legOffset.y),
-    },
-    dataKey: "moonlander_foot_placeholder",
-  });
+  // createPart(lander, {
+  //   name: "foot_right",
+  //   sprite: "moonlander_foot",
+  //   position: {
+  //     x: mpx(corpusPosition.x + legOffset.x),
+  //     y: mpx(corpusPosition.y - legOffset.y),
+  //   },
+  //   dataKey: "moonlander_foot_placeholder",
+  // });
 };

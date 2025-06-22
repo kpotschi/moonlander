@@ -21,22 +21,19 @@ export default class World {
   }
 
   setWorldSize() {
-    let { width, height } = this.scene.background.getBgSize();
-
-    width *= CONSTANTS.WORLD.SCALE;
-    height *= CONSTANTS.WORLD.SCALE;
-
-    this.worldSizePx = {
-      width,
-      height,
-    };
-
-    this.worldSizeM = {
-      width: pxm(width),
-      height: pxm(height),
-    };
-    console.log("world in m", this.worldSizeM);
-    console.log("world in px", this.worldSizePx);
+    // let { width, height } = this.scene.background.getBgSize();
+    // width *= CONSTANTS.WORLD.SCALE;
+    // height *= CONSTANTS.WORLD.SCALE;
+    // this.worldSizePx = {
+    //   width,
+    //   height,
+    // };
+    // this.worldSizeM = {
+    //   width: pxm(width),
+    //   height: pxm(height),
+    // };
+    // console.log("world in m", this.worldSizeM);
+    // console.log("world in px", this.worldSizePx);
   }
 
   getWorldId(): b2WorldId {

@@ -50,8 +50,8 @@
 					<filter_maskBits>65535</filter_maskBits>
 					<fixture_type>POLYGON</fixture_type>
 					<polygons>
-                        <polygon>  -64.0000, 64.0000  ,  -64.0000, -1.0000  ,  64.0000, -1.0000  ,  64.0000, 64.0000 </polygon>
-                        <polygon>  -96.0000, -64.0000  ,  96.0000, -64.0000  ,  64.0000, -1.0000  ,  -64.0000, -1.0000 </polygon>
+                        <polygon>  -53.0000, 48.0000  ,  -53.0000, -2.0000  ,  53.0000, -2.0000  ,  53.0000, 48.0000 </polygon>
+                        <polygon>  -80.0000, -48.0000  ,  80.0000, -48.0000  ,  53.0000, -2.0000  ,  -53.0000, -2.0000 </polygon>
 					</polygons>
 				</fixture>
 			</fixtures>
@@ -59,7 +59,7 @@
 	</bodies>
 	<metadata>
 		<format>1</format>
-		<ptm_ratio>40</ptm_ratio>
+		<ptm_ratio>16</ptm_ratio>
 	</metadata>
 </bodydef>
 

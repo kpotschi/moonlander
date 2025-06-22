@@ -1,12 +1,12 @@
 export const CONSTANTS = {
   LANDER: {
-    DEFAULT_STARTING_POSITION: { x: 0, y: 800 }, // px
+    DEFAULT_STARTING_POSITION: { x: 720, y: -160 }, // px
     FUEL: {
       STARTING: 1000,
       CONSUMPTION: 0.03,
     }, // fuel consumed per second when thrusting
     ANGULAR_DAMPING: 3, // angular damping
-    THRUST: { UPWARDS: 800, SIDEWAYS: 250 }, // nM
+    THRUST: { UPWARDS: 800, ROTATION: 60 }, // nM
     CORPUS: {
       JOINTS: {
         ANCHORS: {
@@ -38,9 +38,19 @@ export const CONSTANTS = {
   },
 
   WORLD: {
-    SCALE: 20, // 1 meter = 20 pixels
+    SCALE: 16, // 1 meter = 20 pixels
     GRAVITY: -9.81, // m/s^2
     TERMINAL_VELOCITY: 30, // m/s
+    LEVEL_SIZE: {
+      METERS: {
+        WIDTH: 80, // meters
+        HEIGHT: 160, // meters
+      },
+      PIXELS: {
+        WIDTH: 1280, // pixels
+        HEIGHT: 2560, // pixels}
+      },
+    },
   },
   CAMERA: {
     FOLLOW_OFFSET_Y: -200,

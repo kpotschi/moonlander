@@ -35,7 +35,6 @@ export default class Lander implements IDebug {
   public physicsData: XMLDocument;
   public corpus: Part;
   private systems: LanderSystems;
-  public spawnPoint: Phaser.Types.Math.Vector2Like;
   constructor(readonly scene: GameScene) {}
 
   public preload() {
@@ -55,24 +54,19 @@ export default class Lander implements IDebug {
     this.scene.load.xml("moonlander_data", "images/moonlander/moonlander.xml");
   }
 
-  public create(levelData: LevelData) {
-    const spawn = levelData.entities.spawn[0];
-    this.spawnPoint = new Phaser.Math.Vector2(spawn.x, spawn.y);
-
+  public create() {
     this.physicsData = this.scene.cache.xml.get(
       "moonlander_data"
     ) as XMLDocument;
 
     createParts(this);
-    this.createJoints();
+    // this.createJoints();
     this.systems = new LanderSystems(this.scene, this);
     this.setupAngularMovement();
     // Debugger.getInstance(this.scene).addDebugMethod(this.debug.bind(this));
   }
 
   private setupAngularMovement() {
-    // limit the maximum rotation
-
     // makes the body harder to rotate in general
     b2Body_SetAngularDamping(
       this.corpus.body.bodyId,
@@ -174,18 +168,19 @@ export default class Lander implements IDebug {
     b2Body_ApplyTorque(this.corpus.body.bodyId, correctionTorque, true);
   }
 
-  public getFuel(): number {
-    return this.systems.fuel;
-  }
+  // public getFuel(): number {
+  //   return this.systems.fuel;
+  // }
 
   update(deltaTime: number) {
+    if (!this.systems) return;
     if (this.scene.controls.thrust) this.systems.thrust(deltaTime);
-    const vector = this.scene.controls.steer; // -1 for left, +1 for right, 0 for none
-    if (vector !== 0) this.systems.steer(deltaTime, vector);
-    this.checkTerminalVelocity();
-    this.updateAngularMovement();
+    const vector = this.scene.controls.rotate; // -1 for left, +1 for right, 0 for none
+    if (vector !== 0) this.systems.rotate(deltaTime, vector);
 
-    this.checkWorldWrap();
+    // this.checkTerminalVelocity();
+    // this.updateAngularMovement();
+    // this.checkWorldWrap();
   }
 
   private checkWorldWrap() {
@@ -216,16 +211,35 @@ export default class Lander implements IDebug {
   public debug(gui: GUI) {
     const debugObject = {
       angularDamping: b2Body_GetAngularDamping(this.corpus.body.bodyId),
+      thrust: CONSTANTS.LANDER.THRUST.UPWARDS,
+      rotation: CONSTANTS.LANDER.THRUST.ROTATION,
     };
 
     const debugFolder = gui.addFolder("Lander");
-    debugFolder.add(debugObject, "angularDamping", 0, 10);
-    //   .step(0.1)
-    //   .onFinishChange((value: number) => {
-    //     console.log("hehe");
 
-    //     b2Body_SetAngularDamping(this.corpus.body.bodyId, value);
-    //   });
+    debugFolder
+      .add(debugObject, "thrust", 500, 1200)
+      .step(10)
+      .onFinishChange((value: number) => {
+        CONSTANTS.LANDER.THRUST.UPWARDS = value;
+        this.systems.thrust(0); // Update thrust immediately
+      });
+
+    debugFolder
+      .add(debugObject, "rotation", 30, 100)
+      .step(1)
+      .onFinishChange((value: number) => {
+        CONSTANTS.LANDER.THRUST.ROTATION = value;
+        this.systems.rotate(0, 1); // Update rotation immediately
+      });
+
+    debugFolder
+      .add(debugObject, "angularDamping", 0, 10)
+      .step(0.1)
+      .onFinishChange((value: number) =>
+        b2Body_SetAngularDamping(this.corpus.body.bodyId, value)
+      );
+
     debugFolder.open();
   }
 

@@ -8,10 +8,10 @@ A structured plan to build a 6-level lunar lander-style game with physics, explo
 
 ### ✅ Milestone 1: Lander Physics Prototype
 
-- [ ] Create a simple lander body using Box2D.js
+- [x] Create a simple lander body using Box2D.js
 - [ ] Implement thrust and rotation controls (left/right + main thrust)
-- [ ] Add gravity and a basic terrain body (flat ground)
-- [ ] Set up camera to follow the lander
+- [x] Add gravity and a basic terrain body (flat ground)
+- [x] Set up camera to follow the lander
 
 🧪 _Goal:_ You can hover and land on flat ground with physics.
 

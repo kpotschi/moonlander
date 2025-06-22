@@ -1,7 +1,9 @@
 import {
   b2Body_ApplyForce,
+  b2Body_ApplyTorque,
   b2Body_GetPosition,
   b2Body_GetRotation,
+  b2Body_SetFixedRotation,
   b2Vec2,
 } from "phaser-box2d";
 import GameScene from "../../scenes/GameScene";
@@ -17,70 +19,54 @@ export default class LanderSystems {
     // this.createSystems();
   }
 
-  set fuel(value: number) {
-    this._fuel = value;
-    this.scene.ui.fuelGauge.setValue(value);
-  }
+  // set fuel(value: number) {
+  //   this._fuel = value;
+  //   this.scene.ui.fuelGauge.setValue(value);
+  // }
 
-  get fuel(): number {
-    return this._fuel;
-  }
+  // get fuel(): number {
+  //   return this._fuel;
+  // }
 
-  public useFuel(deltaTime: number, magnitude: number): void {
-    const amount =
-      CONSTANTS.LANDER.FUEL.CONSUMPTION * magnitude * (deltaTime / 1000);
+  // public useFuel(deltaTime: number, magnitude: number): void {
+  //   const amount =
+  //     CONSTANTS.LANDER.FUEL.CONSUMPTION * magnitude * (deltaTime / 1000);
 
-    this.fuel = Math.max(0, this.fuel - amount);
-    if (this.fuel === 0) {
-      //   this.scene.controls.disable();
-      //   this.scene.ui.fuelGauge.setValue(0);
-      // Optionally, you can trigger an event or show a message when fuel runs out
-      console.warn("Fuel depleted! Lander controls disabled.");
-    }
-  }
+  //   this.fuel = Math.max(0, this.fuel - amount);
+  //   if (this.fuel === 0) {
+  //     //   this.scene.controls.disable();
+  //     //   this.scene.ui.fuelGauge.setValue(0);
+  //     // Optionally, you can trigger an event or show a message when fuel runs out
+  //     console.warn("Fuel depleted! Lander controls disabled.");
+  //   }
+  // }
 
   public thrust(deltaTime: number) {
     const body = this.lander.corpus.body.bodyId;
-    const pos = b2Body_GetPosition(body);
     const rot = b2Body_GetRotation(body);
     const angle = Math.atan2(rot.s, rot.c);
 
-    // Offset from center to bottom (half lander height, adjust as needed)
-    const offsetY = -3.5; // meters, negative for "down" in local space
-    const thrusterX = pos.x + Math.sin(angle) * offsetY;
-    const thrusterY = pos.y - Math.cos(angle) * offsetY;
-
+    // Apply thrust in the direction the lander is facing
     const thrustMagnitude = CONSTANTS.LANDER.THRUST.UPWARDS;
     const force = new b2Vec2(
       -Math.sin(angle) * thrustMagnitude,
       Math.cos(angle) * thrustMagnitude
     );
 
-    b2Body_ApplyForce(body, force, new b2Vec2(thrusterX, thrusterY), true);
-    this.useFuel(deltaTime, thrustMagnitude);
+    // Apply force at center of mass (no offset needed)
+    const pos = b2Body_GetPosition(body);
+    b2Body_ApplyForce(body, force, pos, true);
+
+    // this.useFuel(deltaTime, thrustMagnitude);
   }
 
-  public steer(deltaTime: number, vector: number) {
-    const body = this.lander.corpus.body.bodyId;
-    const pos = b2Body_GetPosition(body);
-    const rot = b2Body_GetRotation(body);
-    const angle = Math.atan2(rot.s, rot.c);
-
-    // Offset from center to side (half lander width, adjust as needed)
-    const offsetX = 5; // meters, positive for right, negative for left
-    // Fire from the opposite side for visual realism (optional)
-    const thrusterX = pos.x + Math.cos(angle) * -offsetX * vector;
-    const thrusterY = pos.y + Math.sin(angle) * -offsetX * vector;
-
-    // Thrust direction: perpendicular to "down" (right is +, left is -)
-    const sideThrustMagnitude = CONSTANTS.LANDER.THRUST.SIDEWAYS;
-    const force = new b2Vec2(
-      Math.cos(angle) * sideThrustMagnitude * vector,
-      Math.sin(angle) * sideThrustMagnitude * vector
+  public rotate(deltaTime: number, vector: number) {
+    b2Body_ApplyTorque(
+      this.lander.corpus.body.bodyId,
+      vector * CONSTANTS.LANDER.THRUST.ROTATION * deltaTime,
+      true
     );
-
-    b2Body_ApplyForce(body, force, new b2Vec2(thrusterX, thrusterY), true);
-    this.useFuel(deltaTime, sideThrustMagnitude);
+    // this.useFuel(deltaTime, sideThrustMagnitude);
   }
 
   //   set heat(value: number) {
