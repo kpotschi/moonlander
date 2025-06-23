@@ -40,15 +40,15 @@ export default class Lander implements IDebug {
   public preload() {
     this.scene.load.image(
       "moonlander",
-      "/images/moonlander/moonlander_placeholder.png"
+      "./images/moonlander/moonlander_placeholder.png"
     );
     this.scene.load.image(
       "moonlander_foot",
-      "images/moonlander/moonlander_feet_placeholder.png"
+      "./images/moonlander/moonlander_feet_placeholder.png"
     );
     this.scene.load.image(
       "moonlander_leg",
-      "images/moonlander/moonlander_leg_placeholder.png"
+      "./images/moonlander/moonlander_leg_placeholder.png"
     );
 
     this.scene.load.xml("moonlander_data", "images/moonlander/moonlander.xml");
