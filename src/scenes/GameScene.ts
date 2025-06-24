@@ -40,6 +40,7 @@ export default class GameScene extends Phaser.Scene {
   readonly debugMode: boolean = false;
   private debugger: Debugger;
   public background: Background;
+  mapData: Phaser.Tilemaps.Tilemap;
   // private levelData: LevelData;
 
   constructor() {
@@ -59,18 +60,60 @@ export default class GameScene extends Phaser.Scene {
   }
 
   preload() {
-    // this.load.image("star", "./images/star.png");
+    this.load.tilemapTiledJSON("level-1", "./levels/level-1.json");
+    this.load.atlas(
+      "textures",
+      "./images/textures.webp",
+      "./images/textures.json"
+    );
+    // this.load.image("mountain", "./images/mountain.png");
     // this.load.json(
     //   "level-0",
     //   "./material/chunk-test/simplified/Level_0/data.json"
     // );
     // this.background.preload();
+
     this.lander.preload();
     // this.ui.preload();
   }
 
   async create() {
-    // this.levelData = this.cache.json.get("level-0");
+    this.mapData = this.make.tilemap({ key: "level-1" });
+    // var img1 = this.mapData.addTilesetImage("mountain.png", "mountain")!;
+    // var img2 = this.mapData.addTilesetImage(
+    //   "moonlander_placeholder.png",
+    //   "moonlander"
+    // )!;
+
+    this.mapData.objects.forEach((objectLayer) => {
+      objectLayer.objects.forEach((object) => {
+        if (object.gid && object.x && object.y) {
+          console.log(object);
+
+          const textureName: string = this.getByGid(object.gid);
+          this.add.image(object.x, object.y, "textures", textureName);
+        }
+      });
+    });
+
+    // if (obstaclesLayer) {
+    //   console.log(obstaclesLayer);
+    //   obstaclesLayer.objects.forEach((obj) => {
+    //     console.log(obj);
+    //     if (obj.gid) {
+    //       // This is an image object (from an image collection tileset)
+    //       const tileset = this.mapData.tilesets[0]; // Adjust if you have multiple tilesets
+    //       console.log(tileset);
+    //     }
+    //     // You can also check for type/class here if you
+    //     // use them
+    //   });
+    // }
+    // console.log(this.mapData.getObjectLayer("obstacles"));
+
+    // this.mapData.createLayer("obstacles", [img1, img2]);
+
+    // this.createObstacleLayer(); // this.levelData = this.cache.json.get("level-0");
     // console.log(this.levelData);
     // // LevelManager.shapeLevelData(this.levelData);
     // this.createCollectibles();
@@ -82,6 +125,49 @@ export default class GameScene extends Phaser.Scene {
     this.setupCameras();
     this.createGround();
     if (this.debugger) this.debugger.start();
+  }
+
+  getByGid(gid: number) {
+    const collection = this.mapData.imageCollections.find((collection) =>
+      collection.containsImageIndex(gid)
+    );
+
+    const imageObject = collection?.images.find((image) => image.gid === gid);
+
+    if (!imageObject) {
+      console.warn(`No image found for gid ${gid}`);
+      return null;
+    }
+
+    return imageObject.image.split("/").pop();
+  }
+
+  createObstacleLayer() {
+    // this.mapData.createFromObjects("obstacles", {
+    //   key: "mountain",
+    // });
+    // const obstaclesLayer = this.mapData.getObjectLayer("obstacles");
+    // if (obstaclesLayer) {
+    //   console.log(obstaclesLayer);
+    //   obstaclesLayer.objects.forEach((obj) => {
+    //     console.log(obj);
+    //     if (obj.gid) {
+    //       // This is an image object (from an image collection tileset)
+    //       // const tileset = this.mapData.tilesets[0]; // Adjust if you have multiple tilesets
+    //       // const tileProps = tileset.getTileProperties(
+    //       //   obj.gid - tileset.firstgid
+    //       // );
+    //       // const imageName = tileset.getTileImageName(
+    //       //   obj.gid - tileset.firstgid
+    //       // );
+    //       // this.add
+    //       //   .image(obj.x, obj.y, imageName)
+    //       //   .setOrigin(0, 1) // Tiled's default for image objects
+    //       //   .setDisplaySize(obj.width, obj.height);
+    //     }
+    //     // You can also check for type/class here if you use them
+    //   });
+    // }
   }
 
   // createCollectibles() {

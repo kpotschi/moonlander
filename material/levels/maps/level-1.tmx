@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.11" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="40" height="80" tilewidth="32" tileheight="32" infinite="0" nextlayerid="5" nextobjectid="15">
+ <editorsettings>
+  <export target="../../../public/levels/level-1.json" format="json"/>
+ </editorsettings>
+ <tileset firstgid="1" name="environment" tilewidth="1017" tileheight="700" tilecount="2" columns="0" objectalignment="center">
+  <grid orientation="orthogonal" width="1" height="1"/>
+  <tile id="0" type="Obstacle">
+   <properties>
+    <property name="texture" propertytype="testEnum" value="mountain"/>
+   </properties>
+   <image source="../../textures/images/mountain.png" width="1017" height="700"/>
+  </tile>
+  <tile id="1" type="Spawn">
+   <image source="../../textures/images/moonlander_placeholder.png" width="160" height="96"/>
+  </tile>
+ </tileset>
+ <objectgroup id="2" name="obstacles">
+  <object id="7" type="Obstacle" gid="1" x="103.491" y="2240.81" width="1017" height="700"/>
+  <object id="14" gid="1" x="1483.83" y="2208.33" width="1017" height="700"/>
+ </objectgroup>
+ <objectgroup id="4" name="environment"/>
+ <objectgroup id="3" name="gameplay"/>
+</map>

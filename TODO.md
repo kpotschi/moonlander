@@ -21,7 +21,8 @@ A structured plan to build a 6-level lunar lander-style game with physics, explo
 
 - [ ] Design a 1280 × 2560 px test level in LDtk
 - [ ] Use 32px grid (2 meters per tile with world scale = 16)
-- [ ] Define terrain using `GroundCollider` entities
+- [ ] Entity layer name: `Colliders`
+- [ ] Define terrain using `GroundCollider` entities as Rectangles for now
 - [ ] Load LDtk level into Phaser
 - [ ] Create Box2D colliders from entities
 

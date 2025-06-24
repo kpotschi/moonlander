@@ -27,7 +27,7 @@ export type PartCreateConfig = {
 
 const createPart = (lander: Lander, config: PartCreateConfig): Part => {
   const gameObject = lander.scene.add
-    .sprite(config.position.x, config.position.y, config.sprite)
+    .sprite(config.position.x, config.position.y, "textures", config.sprite)
     .setDepth(10);
 
   const body = CreatePhysicsEditorShape({
@@ -52,13 +52,12 @@ export const createParts = (lander: Lander) => {
 
   lander.corpus = createPart(lander, {
     name: "corpus",
-    sprite: "moonlander",
+    sprite: "moonlander_placeholder.png",
     position: CONSTANTS.LANDER.DEFAULT_STARTING_POSITION, // in px
     dataKey: "moonlander_placeholder",
   });
 
-  const corpusPosition = b2Body_GetPosition(lander.corpus.body.bodyId);
-  console.log(corpusPosition);
+  // const corpusPosition = b2Body_GetPosition(lander.corpus.body.bodyId);
 
   // // legs
   // const legOffset = { x: 2.5, y: 3.7 };

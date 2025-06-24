@@ -1,6 +1,7 @@
 import GUI from "lil-gui";
 import {
   b2Body_ApplyForce,
+  b2Body_ApplyLinearImpulseToCenter,
   b2Body_ApplyTorque,
   b2Body_GetAngularDamping,
   b2Body_GetAngularVelocity,
@@ -8,6 +9,7 @@ import {
   b2Body_GetPosition,
   b2Body_GetRotation,
   b2Body_SetAngularDamping,
+  b2Body_SetLinearDamping,
   b2Body_SetLinearVelocity,
   b2Body_SetTransform,
   b2CreateRevoluteJoint,
@@ -27,6 +29,7 @@ import { JointsCreateConfig } from "./Lander.d.js";
 import { createParts, Part } from "./LanderParts.js";
 import LanderSystems from "./LanderSystems.js";
 import { LevelData } from "../../config/types.js";
+import { b2_linearSlop } from "phaser-box2d/types/include/core_h.js";
 
 @Debuggable
 export default class Lander implements IDebug {
@@ -38,18 +41,18 @@ export default class Lander implements IDebug {
   constructor(readonly scene: GameScene) {}
 
   public preload() {
-    this.scene.load.image(
-      "moonlander",
-      "./images/moonlander/moonlander_placeholder.png"
-    );
-    this.scene.load.image(
-      "moonlander_foot",
-      "./images/moonlander/moonlander_feet_placeholder.png"
-    );
-    this.scene.load.image(
-      "moonlander_leg",
-      "./images/moonlander/moonlander_leg_placeholder.png"
-    );
+    // this.scene.load.image(
+    //   "moonlander",
+    //   "./images/moonlander/moonlander_placeholder.png"
+    // );
+    // this.scene.load.image(
+    //   "moonlander_foot",
+    //   "./images/moonlander/moonlander_feet_placeholder.png"
+    // );
+    // this.scene.load.image(
+    //   "moonlander_leg",
+    //   "./images/moonlander/moonlander_leg_placeholder.png"
+    // );
 
     this.scene.load.xml("moonlander_data", "images/moonlander/moonlander.xml");
   }
@@ -63,7 +66,10 @@ export default class Lander implements IDebug {
     // this.createJoints();
     this.systems = new LanderSystems(this.scene, this);
     this.setupAngularMovement();
-    // Debugger.getInstance(this.scene).addDebugMethod(this.debug.bind(this));
+
+    // interesting to use maybe?
+    // b2Body_ApplyLinearImpulseToCenter
+    //  // Debugger.getInstance(this.scene).addDebugMethod(this.debug.bind(this));
   }
 
   private setupAngularMovement() {

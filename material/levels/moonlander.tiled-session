@@ -1,0 +1,50 @@
+{
+    "activeFile": "maps/level-1.tmx",
+    "expandedProjectPaths": [
+        "tilesets",
+        ".",
+        "maps"
+    ],
+    "fileStates": {
+        "": {
+            "scaleInDock": 0.25,
+            "scaleInEditor": 1
+        },
+        "maps/level-1.tmx": {
+            "scale": 0.12,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 2845.8333333333335,
+                "y": 3654.166666666667
+            }
+        },
+        "maps/level-1.tmx#environment": {
+            "dynamicWrapping": true,
+            "scaleInDock": 0.0625,
+            "scaleInEditor": 1
+        },
+        "maps/level-1.tmx#test": {
+            "dynamicWrapping": true,
+            "scaleInEditor": 1
+        },
+        "tilesets/environment.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 0.125,
+            "scaleInEditor": 0.5
+        }
+    },
+    "last.exportedFilePath": "/Users/kevinpotschien/Coding/moonlander/public/levels",
+    "last.imagePath": "/Users/kevinpotschien/Coding/moonlander/material/textures/images",
+    "map.lastUsedExportFilter": "JSON map files (*.tmj *.json)",
+    "openFiles": [
+        "maps/level-1.tmx"
+    ],
+    "project": "moonlander.tiled-project",
+    "property.type": "testEnum",
+    "recentFiles": [
+        "maps/level-1.tmx",
+        "tilesets/environment.tsx"
+    ],
+    "tileset.embedInMap": true,
+    "tileset.type": 0
+}
