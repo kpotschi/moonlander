@@ -9,7 +9,7 @@ A structured plan to build a 6-level lunar lander-style game with physics, explo
 ### ✅ Milestone 1: Lander Physics Prototype
 
 - [x] Create a simple lander body using Box2D.js
-- [ ] Implement thrust and rotation controls (left/right + main thrust)
+- [x] Implement thrust and rotation controls (left/right + main thrust)
 - [x] Add gravity and a basic terrain body (flat ground)
 - [x] Set up camera to follow the lander
 
@@ -19,11 +19,12 @@ A structured plan to build a 6-level lunar lander-style game with physics, explo
 
 ### ✅ Milestone 2: First LDtk Level Integration
 
-- [ ] Design a 1280 × 2560 px test level in LDtk
-- [ ] Use 32px grid (2 meters per tile with world scale = 16)
-- [ ] Entity layer name: `Colliders`
+- [x] Design a 1280 × 2560 px test level in Tiled
+- [x] Use 32px grid (2 meters per tile with world scale = 16)
+- [x] Entity layer name: `Obstacles`
+- [x] Entity layer name: `Environment`
 - [ ] Define terrain using `GroundCollider` entities as Rectangles for now
-- [ ] Load LDtk level into Phaser
+- [x] Load Tiled level into Phaser
 - [ ] Create Box2D colliders from entities
 
 🧪 _Goal:_ You can fly through a visually designed level with physics.

@@ -16,8 +16,8 @@
                  "type":"Obstacle",
                  "visible":true,
                  "width":1017,
-                 "x":103.491333333333,
-                 "y":2240.80666666667
+                 "x":74.3760931677019,
+                 "y":2209.75409937888
                 }, 
                 {
                  "gid":1,
@@ -28,8 +28,32 @@
                  "type":"",
                  "visible":true,
                  "width":1017,
-                 "x":1483.83333333333,
-                 "y":2208.33333333333
+                 "x":1235.38279503106,
+                 "y":2212.21198757764
+                }, 
+                {
+                 "gid":1,
+                 "height":226.39751552795,
+                 "id":15,
+                 "name":"",
+                 "rotation":270,
+                 "type":"",
+                 "visible":true,
+                 "width":1185.86645962733,
+                 "x":781.866459627329,
+                 "y":750.970830227743
+                }, 
+                {
+                 "gid":1,
+                 "height":700,
+                 "id":18,
+                 "name":"",
+                 "rotation":90,
+                 "type":"",
+                 "visible":true,
+                 "width":1017,
+                 "x":358.833,
+                 "y":1041.66666666667
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -60,7 +84,7 @@
          "y":0
         }],
  "nextlayerid":5,
- "nextobjectid":15,
+ "nextobjectid":19,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.11.2",

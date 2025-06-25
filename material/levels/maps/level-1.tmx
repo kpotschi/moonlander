@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.11" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="40" height="80" tilewidth="32" tileheight="32" infinite="0" nextlayerid="5" nextobjectid="15">
+<map version="1.11" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="40" height="80" tilewidth="32" tileheight="32" infinite="0" nextlayerid="5" nextobjectid="19">
  <editorsettings>
   <export target="../../../public/levels/level-1.json" format="json"/>
  </editorsettings>
@@ -16,8 +16,10 @@
   </tile>
  </tileset>
  <objectgroup id="2" name="obstacles">
-  <object id="7" type="Obstacle" gid="1" x="103.491" y="2240.81" width="1017" height="700"/>
-  <object id="14" gid="1" x="1483.83" y="2208.33" width="1017" height="700"/>
+  <object id="7" type="Obstacle" gid="1" x="74.3761" y="2209.75" width="1017" height="700"/>
+  <object id="14" gid="1" x="1235.38" y="2212.21" width="1017" height="700"/>
+  <object id="15" gid="1" x="781.866" y="750.971" width="1185.87" height="226.398" rotation="270"/>
+  <object id="18" gid="1" x="358.833" y="1041.67" width="1017" height="700" rotation="90"/>
  </objectgroup>
  <objectgroup id="4" name="environment"/>
  <objectgroup id="3" name="gameplay"/>
